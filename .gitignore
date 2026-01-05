@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+apps/web/build/
+apps/web/.svelte-kit/
+dist/
+*.exe
+backend/bin/function.zip
+backend/bin/api
+backend/bin/worker
+# Keep placeholder bootstrap for terraform validate; real binary overwrites it locally.
+
+# Env and secrets
+.env
+.env.local
+*.pem
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Terraform
+infra/terraform/.terraform/
+infra/terraform/*.tfstate*
+infra/terraform/localstack_providers_override.tf
+infra/terraform/.terraform.lock.hcl
+
+# Test / coverage
+coverage/
+*.out
+*.test
+
+# Logs
+*.log
