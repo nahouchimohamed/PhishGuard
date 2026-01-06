@@ -32,13 +32,13 @@ resource "aws_iam_role" "lambda" {
 }
 
 resource "aws_lambda_function" "deliver" {
-  function_name = "phishguard-deliver"
-  role          = aws_iam_role.lambda.arn
-  handler       = "bootstrap"
-  runtime       = "provided.al2023"
-  filename      = data.archive_file.lambda_zip.output_path
+  function_name    = "phishguard-deliver"
+  role             = aws_iam_role.lambda.arn
+  handler          = "bootstrap"
+  runtime          = "provided.al2023"
+  filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
-  timeout       = 30
+  timeout          = 30
 
   environment {
     variables = {
