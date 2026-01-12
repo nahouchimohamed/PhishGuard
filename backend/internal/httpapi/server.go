@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/phishguard/phishguard/internal/auth"
+	"github.com/phishguard/phishguard/internal/cache"
 	"github.com/phishguard/phishguard/internal/campaign"
 	"github.com/phishguard/phishguard/internal/metrics"
 	"github.com/phishguard/phishguard/internal/store"
@@ -18,11 +20,12 @@ type Server struct {
 	auth      *auth.Service
 	store     *store.Store
 	campaigns *campaign.Service
+	cache     *cache.Dashboard
 	mux       *http.ServeMux
 }
 
-func New(authSvc *auth.Service, st *store.Store, camps *campaign.Service) *Server {
-	s := &Server{auth: authSvc, store: st, campaigns: camps, mux: http.NewServeMux()}
+func New(authSvc *auth.Service, st *store.Store, camps *campaign.Service, dash *cache.Dashboard) *Server {
+	s := &Server{auth: authSvc, store: st, campaigns: camps, cache: dash, mux: http.NewServeMux()}
 	s.routes()
 	return s
 }
@@ -55,11 +58,33 @@ func (s *Server) routes() {
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
-	if err := s.store.Ping(r.Context()); err != nil {
-		writeError(w, http.StatusServiceUnavailable, "db unavailable")
+	dbErr := s.store.Ping(r.Context())
+	redisErr := s.pingRedis(r.Context())
+	body := map[string]string{
+		"status": "ok",
+		"db":     depStatus(dbErr),
+		"redis":  depStatus(redisErr),
+	}
+	if dbErr != nil || redisErr != nil {
+		body["status"] = "unavailable"
+		writeJSON(w, http.StatusServiceUnavailable, body)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	writeJSON(w, http.StatusOK, body)
+}
+
+func (s *Server) pingRedis(ctx context.Context) error {
+	if s.cache == nil {
+		return errors.New("redis not configured")
+	}
+	return s.cache.Ping(ctx)
+}
+
+func depStatus(err error) string {
+	if err != nil {
+		return "down"
+	}
+	return "ok"
 }
 
 type loginRequest struct {
