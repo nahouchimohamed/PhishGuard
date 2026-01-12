@@ -35,6 +35,10 @@ func (d *Dashboard) Close() error {
 	return d.rdb.Close()
 }
 
+func (d *Dashboard) Ping(ctx context.Context) error {
+	return d.rdb.Ping(ctx).Err()
+}
+
 func (d *Dashboard) key(campaignID string) string {
 	return "campaign:stats:" + campaignID
 }
