@@ -6,9 +6,14 @@
 **/coverage
 **/*.md
 docs
+infra
+monitoring
+deploy
+backend/bin
 infra/terraform/.terraform
 backend/bin/function.zip
 **/.env
 **/.env.local
-**/agent-transcripts
-**/.cursor
+**/.vscode
+**/.idea
+**/*.log
