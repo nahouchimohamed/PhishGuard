@@ -17,12 +17,10 @@
 
 	{#if data.error}
 		<p class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{data.error}</p>
-	{/if}
-
-	{#if data.campaigns.length === 0}
+	{:else if data.campaigns.length === 0}
 		<div class="card text-slate-600">No campaigns yet. Create one to start a drill.</div>
 	{:else}
-		<div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+		<div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
 			<table class="min-w-full text-left text-sm">
 				<thead class="bg-slate-50 text-slate-600">
 					<tr>
