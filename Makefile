@@ -1,11 +1,20 @@
 COMPOSE = docker compose -f deploy/docker-compose.yml --env-file .env.example
 
-.PHONY: up down logs ps rebuild-backend api-test web-test fmt tidy ci-local lambda-zip
+.PHONY: help up down stop reset logs ps rebuild-backend api-test api-check web-test web-check fmt fmt-check tidy ci-local lambda-zip compose-config
+
+help:
+	@echo "Targets: up down stop reset logs ps rebuild-backend api-test api-check web-test web-check fmt fmt-check tidy ci-local lambda-zip compose-config"
 
 up:
 	$(COMPOSE) up --build -d
 
 down:
+	$(COMPOSE) down
+
+stop:
+	$(COMPOSE) stop
+
+reset:
 	$(COMPOSE) down -v
 
 logs:
@@ -21,18 +30,30 @@ rebuild-backend:
 api-test:
 	cd backend && go test ./...
 
+api-check:
+	cd backend && test -z "$$(gofmt -l .)" && go vet ./... && go test ./...
+
 web-test:
 	cd apps/web && npm test
+
+web-check:
+	cd apps/web && npm run check && npm test
 
 fmt:
 	cd backend && gofmt -w .
 	cd apps/web && npm run format
 
+fmt-check:
+	cd backend && test -z "$$(gofmt -l .)"
+	cd apps/web && npm run format:check
+
 tidy:
 	cd backend && go mod tidy
 
 lambda-zip:
-	cd backend && set GOOS=linux&& set GOARCH=amd64&& set CGO_ENABLED=0&& go build -o bin/bootstrap ./cmd/lambda
+	cd backend && GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o bin/bootstrap ./cmd/lambda
 
-ci-local: api-test
-	cd apps/web && npm run check && npm test
+compose-config:
+	$(COMPOSE) config -q
+
+ci-local: api-check web-check
