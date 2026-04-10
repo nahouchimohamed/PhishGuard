@@ -13,13 +13,17 @@ import (
 )
 
 type Service struct {
-	store  *store.Store
-	queue  *queue.Client
-	cache  *cache.Dashboard
+	store  Store
+	queue  Publisher
+	cache  StatsCache
 	appURL string
 }
 
 func New(st *store.Store, q *queue.Client, dash *cache.Dashboard, appURL string) *Service {
+	return &Service{store: st, queue: q, cache: dash, appURL: appURL}
+}
+
+func newService(st Store, q Publisher, dash StatsCache, appURL string) *Service {
 	return &Service{store: st, queue: q, cache: dash, appURL: appURL}
 }
 
