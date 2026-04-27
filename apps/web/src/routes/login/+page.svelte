@@ -23,12 +23,20 @@
 					name="email"
 					type="email"
 					required
+					autocomplete="username"
 					value={form?.email ?? 'admin@phishguard.local'}
 				/>
 			</label>
 			<label class="block text-sm">
 				<span class="mb-1 block font-medium">Password</span>
-				<input class="input" name="password" type="password" required value="phishguard-dev" />
+				<input
+					class="input"
+					name="password"
+					type="password"
+					required
+					autocomplete="current-password"
+					value="phishguard-dev"
+				/>
 			</label>
 			<button class="btn w-full" type="submit">Continue</button>
 		</form>
