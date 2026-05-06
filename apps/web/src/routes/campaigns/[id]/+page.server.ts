@@ -1,34 +1,33 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { apiFetch } from '$lib/server/api';
-import type { Campaign, CampaignStats, RecipientRow, Template } from '$lib/types';
+import { apiFetch, apiPath } from '$lib/server/api';
+import { friendlyError } from '$lib/server/errors';
+import { requireRole } from '$lib/server/guard';
+import type { CampaignDetail } from '$lib/types';
 
-type Detail = {
-	campaign: Campaign;
-	template: Template;
-	stats: CampaignStats;
-	recipients: RecipientRow[];
-};
+export const load: PageServerLoad = async ({ locals, cookies, params, url }) => {
+	requireRole(locals.user, 'admin', url.pathname);
 
-export const load: PageServerLoad = async ({ locals, cookies, params }) => {
-	if (!locals.user) throw redirect(303, '/login');
-	if (locals.user.role !== 'admin') throw redirect(303, '/inbox');
-
-	const res = await apiFetch<Detail>(`/api/campaigns/${params.id}`, { cookies });
+	const res = await apiFetch<CampaignDetail>(apiPath('/api/campaigns', params.id), { cookies });
 	if (!res.ok || !res.data) {
-		return { detail: null, error: res.error ?? 'Not found' };
+		return { detail: null, error: friendlyError(res.status, res.error), notice: null };
 	}
-	return { detail: res.data, error: null };
+	const notice = url.searchParams.get('notice');
+	return {
+		detail: res.data,
+		error: null,
+		notice: notice === 'launch-incomplete' ? 'Campaign saved, but queue publish was incomplete.' : null
+	};
 };
 
 export const actions: Actions = {
-	retry: async ({ locals, cookies, params }) => {
-		if (!locals.user || locals.user.role !== 'admin') throw redirect(303, '/login');
-		const res = await apiFetch(`/api/campaigns/${params.id}/retry`, {
+	retry: async ({ locals, cookies, params, url }) => {
+		requireRole(locals.user, 'admin', url.pathname);
+		const res = await apiFetch(apiPath('/api/campaigns', params.id, 'retry'), {
 			method: 'POST',
 			cookies
 		});
-		if (!res.ok) return fail(res.status, { error: res.error ?? 'Retry failed' });
+		if (!res.ok) return fail(res.status || 400, { error: friendlyError(res.status, res.error) });
 		throw redirect(303, `/campaigns/${params.id}`);
 	}
 };
