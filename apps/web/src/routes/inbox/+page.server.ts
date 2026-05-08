@@ -1,12 +1,15 @@
-import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { apiFetch } from '$lib/server/api';
+import { friendlyError } from '$lib/server/errors';
+import { requireRole } from '$lib/server/guard';
 import type { InboxItem } from '$lib/types';
 
-export const load: PageServerLoad = async ({ locals, cookies }) => {
-	if (!locals.user) throw redirect(303, '/login');
-	if (locals.user.role !== 'employee') throw redirect(303, '/campaigns');
+export const load: PageServerLoad = async ({ locals, cookies, url }) => {
+	requireRole(locals.user, 'employee', url.pathname);
 
 	const res = await apiFetch<InboxItem[]>('/api/inbox', { cookies });
-	return { items: res.data ?? [], error: res.error };
+	if (!res.ok) {
+		return { items: [] as InboxItem[], error: friendlyError(res.status, res.error) };
+	}
+	return { items: res.data ?? [], error: null };
 };
