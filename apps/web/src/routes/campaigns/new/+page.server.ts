@@ -1,11 +1,14 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { apiFetch } from '$lib/server/api';
-import type { Campaign, Template, User } from '$lib/types';
+import { friendlyError } from '$lib/server/errors';
+import { requireRole } from '$lib/server/guard';
+import { parseLaunchResponse } from '$lib/server/launch';
+import { validateCampaignForm } from '$lib/validate';
+import type { Campaign, LaunchResponse, Template, User } from '$lib/types';
 
-export const load: PageServerLoad = async ({ locals, cookies }) => {
-	if (!locals.user) throw redirect(303, '/login');
-	if (locals.user.role !== 'admin') throw redirect(303, '/inbox');
+export const load: PageServerLoad = async ({ locals, cookies, url }) => {
+	requireRole(locals.user, 'admin', url.pathname);
 
 	const [templates, employees] = await Promise.all([
 		apiFetch<Template[]>('/api/templates', { cookies }),
@@ -15,43 +18,52 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 	return {
 		templates: templates.data ?? [],
 		employees: employees.data ?? [],
-		error: templates.error || employees.error || null
+		error:
+			templates.error || employees.error
+				? friendlyError(templates.status || employees.status, templates.error || employees.error)
+				: null
 	};
 };
 
 export const actions: Actions = {
-	default: async ({ request, cookies, locals }) => {
-		if (!locals.user || locals.user.role !== 'admin') throw redirect(303, '/login');
+	default: async ({ request, cookies, locals, url }) => {
+		requireRole(locals.user, 'admin', url.pathname);
 
 		const form = await request.formData();
-		const name = String(form.get('name') ?? '').trim();
-		const template_id = String(form.get('template_id') ?? '');
-		const recipient_user_ids = form.getAll('recipient_user_ids').map(String);
+		const validated = validateCampaignForm({
+			name: form.get('name'),
+			template_id: form.get('template_id'),
+			recipient_user_ids: form.getAll('recipient_user_ids')
+		});
 
-		const values = { name, template_id, recipient_user_ids };
-
-		if (!name || !template_id || recipient_user_ids.length === 0) {
+		if (!validated.ok) {
 			return fail(400, {
-				error: 'Name, template, and at least one employee are required.',
-				values
+				error: 'Fix the highlighted fields and try again.',
+				errors: validated.errors,
+				values: validated.values
 			});
 		}
 
-		const res = await apiFetch<Campaign | { campaign: Campaign; warning?: string }>('/api/campaigns', {
+		const { name, template_id, recipient_user_ids } = validated.values;
+		const res = await apiFetch<Campaign | LaunchResponse>('/api/campaigns', {
 			method: 'POST',
 			body: { name, template_id, recipient_user_ids },
 			cookies
 		});
 
 		if (!res.ok && res.status !== 202) {
-			return fail(res.status || 400, { error: res.error ?? 'Launch failed', values });
+			return fail(res.status || 400, {
+				error: friendlyError(res.status, res.error),
+				values: validated.values
+			});
 		}
 
-		const camp =
-			res.data && 'id' in (res.data as Campaign)
-				? (res.data as Campaign)
-				: (res.data as { campaign: Campaign }).campaign;
+		const parsed = parseLaunchResponse(res.status, res.data);
+		if (!parsed.ok) {
+			return fail(502, { error: parsed.error, values: validated.values });
+		}
 
-		throw redirect(303, `/campaigns/${camp.id}`);
+		const notice = parsed.incomplete ? '?notice=launch-incomplete' : '';
+		throw redirect(303, `/campaigns/${parsed.campaign.id}${notice}`);
 	}
 };
