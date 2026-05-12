@@ -14,4 +14,5 @@ WORKDIR /app
 COPY --from=build /out/worker /app/worker
 USER appuser
 EXPOSE 8081
+# HEALTHCHECK is defined in deploy/docker-compose.yml (wget /healthz).
 ENTRYPOINT ["/app/worker"]
