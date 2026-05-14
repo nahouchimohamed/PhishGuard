@@ -1,0 +1,45 @@
+groups:
+  - name: phishguard
+    rules:
+      - alert: PhishGuardTargetDown
+        expr: up{job=~"phishguard-.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PhishGuard scrape target {{ $labels.job }} is down"
+          description: "Prometheus has not scraped {{ $labels.job }} successfully for over 1 minute."
+
+      - alert: PhishGuardHighHTTP5xxRatio
+        expr: |
+          sum(rate(phishguard_http_requests_total{status=~"5.."}[5m]))
+          /
+          clamp_min(sum(rate(phishguard_http_requests_total[5m])), 1e-9)
+          > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "HTTP 5xx ratio above 5%"
+          description: "API 5xx ratio has stayed above 5% for 5 minutes."
+
+      - alert: PhishGuardNoDeliveries
+        expr: |
+          sum(rate(phishguard_campaign_launches_total[15m])) > 0
+          and
+          sum(rate(phishguard_deliveries_total[15m])) == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Campaigns launched but no deliveries"
+          description: "Launches are happening without matching delivery counters — check the worker/queue."
+
+      - alert: PhishGuardHighGoroutines
+        expr: go_goroutines{job=~"phishguard-.*"} > 500
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High goroutine count on {{ $labels.job }}"
+          description: "{{ $labels.job }} has more than 500 goroutines for 10 minutes."
