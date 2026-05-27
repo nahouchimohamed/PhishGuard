@@ -1,25 +1,52 @@
 <script lang="ts">
+	import Alert from '$lib/components/Alert.svelte';
+	import PageShell from '$lib/components/PageShell.svelte';
+	import { parseLesson } from '$lib/lesson';
+
 	let { data } = $props();
+	const parsed = $derived(data.lesson ? parseLesson(data.lesson.lesson_text) : null);
 </script>
 
-<div class="banner">This was a PhishGuard simulation. There is no login form on purpose.</div>
+<PageShell title="Simulation result" user={data.user} width="max-w-2xl">
+	{#snippet banner()}This is a simulation result. There is no login form here on purpose.{/snippet}
 
-<main class="mx-auto max-w-2xl px-4 py-10">
-	{#if !data.lesson}
-		<div class="card">
-			<h1 class="text-xl font-semibold">Link not found</h1>
-			<p class="mt-2 text-sm text-slate-600">{data.error}</p>
-		</div>
+	{#if !data.lesson || !parsed}
+		<Alert>{data.error}</Alert>
 	{:else}
-		<div class="card border-amber-200">
-			<p class="text-xs font-medium uppercase tracking-wide text-amber-700">Training complete</p>
-			<h1 class="mt-2 text-2xl font-semibold">You clicked a simulated phishing link</h1>
-			<p class="mt-1 text-sm text-slate-600">Template: {data.lesson.name}</p>
-			<p class="mt-1 text-sm text-slate-500">{data.lesson.subject}</p>
-			<pre class="mt-6 whitespace-pre-wrap font-sans text-sm leading-6 text-slate-800"
-				>{data.lesson.lesson_text}</pre
-			>
-			<a class="btn mt-6 inline-flex" href="/inbox">Back to inbox</a>
-		</div>
+		<article class="card border-amber-200">
+			<p class="text-xs uppercase tracking-wide text-amber-800">Awareness notice</p>
+			<h1 class="mt-1 text-2xl font-semibold">{data.lesson.subject}</h1>
+			<p class="mt-1 text-sm text-slate-600">Campaign: {data.lesson.name}</p>
+
+			{#if parsed.intro}
+				<p class="mt-4 text-sm leading-6 text-slate-800">{parsed.intro}</p>
+			{/if}
+
+			{#if parsed.redFlags.length}
+				<div class="mt-4">
+					<h2 class="text-sm font-semibold">Red flags</h2>
+					<ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-800">
+						{#each parsed.redFlags as flag}
+							<li>{flag}</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+
+			{#if parsed.goodHabit}
+				<div class="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+					<strong>Good habit:</strong>
+					{parsed.goodHabit}
+				</div>
+			{/if}
+		</article>
+
+		<p class="mt-6">
+			{#if data.user}
+				<a class="btn" href="/inbox">Back to inbox</a>
+			{:else}
+				<a class="btn" href="/login">Sign in</a>
+			{/if}
+		</p>
 	{/if}
-</main>
+</PageShell>
