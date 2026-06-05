@@ -2,14 +2,17 @@ package campaign
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/phishguard/phishguard/internal/auth"
 	"github.com/phishguard/phishguard/internal/cache"
 	"github.com/phishguard/phishguard/internal/metrics"
 	"github.com/phishguard/phishguard/internal/queue"
 	"github.com/phishguard/phishguard/internal/store"
+	"github.com/phishguard/phishguard/internal/validate"
 )
 
 type Service struct {
@@ -38,14 +41,22 @@ type LaunchInput struct {
 // Launch writes the campaign + recipients, then publishes one SQS message per recipient.
 // If publish fails partway, the campaign stays "launching" and RetryLaunch can finish it.
 func (s *Service) Launch(ctx context.Context, in LaunchInput) (store.Campaign, error) {
-	if in.Name == "" || in.TemplateID == "" || len(in.RecipientUserIDs) == 0 {
-		return store.Campaign{}, store.ErrInvalidInput
+	name := strings.TrimSpace(in.Name)
+	if err := validate.Name(name, 1, 120); err != nil {
+		return store.Campaign{}, store.ValidationError{Msg: err.Error()}
+	}
+	if err := validate.UUID(in.TemplateID); err != nil {
+		return store.Campaign{}, store.ValidationError{Msg: "template_id must be a UUID"}
+	}
+	ids, err := normalizeRecipientIDs(in.RecipientUserIDs)
+	if err != nil {
+		return store.Campaign{}, err
 	}
 	if _, err := s.store.GetTemplate(ctx, in.TemplateID, in.OrgID); err != nil {
 		return store.Campaign{}, err
 	}
 
-	tokens := make([]string, len(in.RecipientUserIDs))
+	tokens := make([]string, len(ids))
 	for i := range tokens {
 		tok, err := auth.NewClickToken()
 		if err != nil {
@@ -55,7 +66,7 @@ func (s *Service) Launch(ctx context.Context, in LaunchInput) (store.Campaign, e
 	}
 
 	campaign, recipientIDs, err := s.store.CreateCampaignWithRecipients(
-		ctx, in.OrgID, in.CreatedBy, in.TemplateID, in.Name, in.RecipientUserIDs, tokens,
+		ctx, in.OrgID, in.CreatedBy, in.TemplateID, name, ids, tokens,
 	)
 	if err != nil {
 		return store.Campaign{}, err
@@ -74,11 +85,40 @@ func (s *Service) Launch(ctx context.Context, in LaunchInput) (store.Campaign, e
 	return campaign, nil
 }
 
+func normalizeRecipientIDs(ids []string) ([]string, error) {
+	if len(ids) == 0 {
+		return nil, store.ValidationError{Msg: "at least one recipient is required"}
+	}
+	if len(ids) > 500 {
+		return nil, store.ValidationError{Msg: "at most 500 recipients are allowed"}
+	}
+	seen := make(map[string]struct{}, len(ids))
+	out := make([]string, 0, len(ids))
+	for _, id := range ids {
+		id = strings.TrimSpace(id)
+		if err := validate.UUID(id); err != nil {
+			return nil, store.ValidationError{Msg: "recipient_user_ids must be UUIDs"}
+		}
+		if _, ok := seen[id]; ok {
+			continue
+		}
+		seen[id] = struct{}{}
+		out = append(out, id)
+	}
+	if len(out) == 0 {
+		return nil, store.ValidationError{Msg: "at least one recipient is required"}
+	}
+	return out, nil
+}
+
 // RetryLaunch re-publishes undelivered recipients for a campaign stuck in launching.
 func (s *Service) RetryLaunch(ctx context.Context, campaignID, orgID string) (store.Campaign, error) {
 	c, err := s.store.GetCampaign(ctx, campaignID, orgID)
 	if err != nil {
 		return store.Campaign{}, err
+	}
+	if c.Status != store.StatusLaunching {
+		return store.Campaign{}, store.ErrConflict
 	}
 	ids, err := s.store.ListUndeliveredRecipientIDs(ctx, campaignID)
 	if err != nil {
@@ -91,34 +131,33 @@ func (s *Service) RetryLaunch(ctx context.Context, campaignID, orgID string) (st
 		return c, err
 	}
 	c.Status = store.StatusActive
+	metrics.CampaignLaunches.Inc()
 	return c, nil
 }
 
 func (s *Service) publishAll(ctx context.Context, campaignID string, recipientIDs []string) error {
-	var firstErr error
+	var errs []error
 	for _, rid := range recipientIDs {
+		if err := ctx.Err(); err != nil {
+			errs = append(errs, err)
+			break
+		}
 		err := s.queue.PublishDeliver(ctx, queue.DeliverMessage{
 			RecipientID: rid,
 			CampaignID:  campaignID,
 		})
-		if err != nil && firstErr == nil {
-			firstErr = err
+		if err != nil {
+			metrics.QueuePublishErrors.Inc()
+			errs = append(errs, err)
 		}
 	}
-	return firstErr
+	return errors.Join(errs...)
 }
 
 // Deliver marks a recipient delivered. Safe to call twice for the same ID.
+// Lookups run before MarkDelivered so a failed lookup cannot leave a delivered
+// row without its event/metric. Duplicate deliveries still invalidate the cache.
 func (s *Service) Deliver(ctx context.Context, recipientID, campaignID string) error {
-	changed, err := s.store.MarkDelivered(ctx, recipientID)
-	if err != nil {
-		return err
-	}
-	if !changed {
-		slog.Info("duplicate deliver ignored", "recipient_id", recipientID)
-		return nil
-	}
-
 	rec, err := s.store.GetRecipient(ctx, recipientID)
 	if err != nil {
 		return err
@@ -127,18 +166,34 @@ func (s *Service) Deliver(ctx context.Context, recipientID, campaignID string) e
 	if err != nil {
 		return err
 	}
-	_ = s.store.InsertEvent(ctx, user.OrgID, campaignID, user.ID, "delivered", recipientID)
-	_ = s.cache.Invalidate(ctx, campaignID)
+	cid := rec.CampaignID
+
+	changed, err := s.store.MarkDelivered(ctx, recipientID)
+	if err != nil {
+		return err
+	}
+	if !changed {
+		slog.Info("duplicate deliver ignored", "recipient_id", recipientID)
+		logInvalidate(ctx, s.cache, cid)
+		return nil
+	}
+
+	logInsertEvent(ctx, s.store, user.OrgID, cid, user.ID, "delivered", recipientID)
+	logInvalidate(ctx, s.cache, cid)
 	metrics.Deliveries.Inc()
-	slog.Info("delivered", "recipient_id", recipientID, "campaign_id", campaignID)
+	slog.Info("delivered", "recipient_id", recipientID, "campaign_id", cid)
 	return nil
 }
 
 func (s *Service) GetStats(ctx context.Context, campaignID string) (store.CampaignStats, error) {
 	if st, ok, err := s.cache.GetStats(ctx, campaignID); err != nil {
+		metrics.StatsCache.WithLabelValues("error").Inc()
 		slog.Warn("cache get failed", "err", err)
 	} else if ok {
+		metrics.StatsCache.WithLabelValues("hit").Inc()
 		return st, nil
+	} else {
+		metrics.StatsCache.WithLabelValues("miss").Inc()
 	}
 
 	st, err := s.store.GetCampaignStats(ctx, campaignID)
@@ -156,11 +211,15 @@ func (s *Service) Report(ctx context.Context, recipientID, userID, orgID string)
 	if err != nil {
 		return err
 	}
-	if err := s.store.MarkReported(ctx, recipientID, userID); err != nil {
+	first, err := s.store.MarkReported(ctx, recipientID, userID)
+	if err != nil {
 		return err
 	}
-	_ = s.store.InsertEvent(ctx, orgID, item.CampaignID, userID, "reported", recipientID)
-	_ = s.cache.Invalidate(ctx, item.CampaignID)
+	if !first {
+		return nil
+	}
+	logInsertEvent(ctx, s.store, orgID, item.CampaignID, userID, "reported", recipientID)
+	logInvalidate(ctx, s.cache, item.CampaignID)
 	metrics.Reports.Inc()
 	return nil
 }
@@ -170,29 +229,48 @@ func (s *Service) Open(ctx context.Context, recipientID, userID, orgID string) e
 	if err != nil {
 		return err
 	}
-	if err := s.store.MarkOpened(ctx, recipientID, userID); err != nil {
+	first, err := s.store.MarkOpened(ctx, recipientID, userID)
+	if err != nil {
 		return err
 	}
-	_ = s.store.InsertEvent(ctx, orgID, item.CampaignID, userID, "opened", recipientID)
-	_ = s.cache.Invalidate(ctx, item.CampaignID)
+	if !first {
+		return nil
+	}
+	logInsertEvent(ctx, s.store, orgID, item.CampaignID, userID, "opened", recipientID)
+	logInvalidate(ctx, s.cache, item.CampaignID)
 	return nil
 }
 
 func (s *Service) Click(ctx context.Context, token string) (store.Template, string, error) {
-	rec, tmpl, err := s.store.MarkClickedByToken(ctx, token)
+	rec, tmpl, first, err := s.store.MarkClickedByToken(ctx, token)
 	if err != nil {
 		return store.Template{}, "", err
+	}
+	if !first {
+		return tmpl, rec.CampaignID, nil
 	}
 	user, err := s.store.GetUserByID(ctx, rec.UserID)
 	if err != nil {
 		return store.Template{}, "", err
 	}
-	_ = s.store.InsertEvent(ctx, user.OrgID, rec.CampaignID, user.ID, "clicked", rec.ID)
-	_ = s.cache.Invalidate(ctx, rec.CampaignID)
+	logInsertEvent(ctx, s.store, user.OrgID, rec.CampaignID, user.ID, "clicked", rec.ID)
+	logInvalidate(ctx, s.cache, rec.CampaignID)
 	metrics.Clicks.Inc()
 	return tmpl, rec.CampaignID, nil
 }
 
 func (s *Service) SimURL(token string) string {
 	return fmt.Sprintf("%s/sim/%s", s.appURL, token)
+}
+
+func logInsertEvent(ctx context.Context, st Store, orgID, campaignID, userID, kind, detail string) {
+	if err := st.InsertEvent(ctx, orgID, campaignID, userID, kind, detail); err != nil {
+		slog.Error("insert event failed", "kind", kind, "campaign_id", campaignID, "err", err)
+	}
+}
+
+func logInvalidate(ctx context.Context, c StatsCache, campaignID string) {
+	if err := c.Invalidate(ctx, campaignID); err != nil {
+		slog.Error("cache invalidate failed", "campaign_id", campaignID, "err", err)
+	}
 }
