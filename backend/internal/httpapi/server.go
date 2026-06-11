@@ -22,6 +22,7 @@ type Server struct {
 	campaigns campaignAPI
 	cache     redisPinger
 	mux       *http.ServeMux
+	logins    *loginLimiter
 }
 
 func New(authSvc *auth.Service, st *store.Store, camps *campaign.Service, dash *cache.Dashboard) *Server {
@@ -29,13 +30,21 @@ func New(authSvc *auth.Service, st *store.Store, camps *campaign.Service, dash *
 }
 
 func newServer(authSvc authService, st storeAPI, camps campaignAPI, dash redisPinger) *Server {
-	s := &Server{auth: authSvc, store: st, campaigns: camps, cache: dash, mux: http.NewServeMux()}
+	s := &Server{
+		auth:      authSvc,
+		store:     st,
+		campaigns: camps,
+		cache:     dash,
+		mux:       http.NewServeMux(),
+		logins:    newLoginLimiter(10, time.Minute),
+	}
 	s.routes()
 	return s
 }
 
 func (s *Server) Handler() http.Handler {
-	return s.mux
+	// Outer chain: request id → access log → recover → 15s timeout → routes.
+	return withRequestID(accessLog(recoverer(withTimeout(15*time.Second, s.mux))))
 }
 
 func (s *Server) routes() {
@@ -62,8 +71,10 @@ func (s *Server) routes() {
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
-	dbErr := s.store.Ping(r.Context())
-	redisErr := s.pingRedis(r.Context())
+	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+	defer cancel()
+	dbErr := s.store.Ping(ctx)
+	redisErr := s.pingRedis(ctx)
 	body := map[string]string{
 		"status": "ok",
 		"db":     depStatus(dbErr),
@@ -98,15 +109,33 @@ type loginRequest struct {
 
 func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	var req loginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := decodeJSON(r, &req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid json")
 		return
 	}
-	user, token, err := s.auth.Login(r.Context(), strings.TrimSpace(strings.ToLower(req.Email)), req.Password)
+	email := strings.TrimSpace(strings.ToLower(req.Email))
+	if email == "" || req.Password == "" {
+		writeError(w, http.StatusBadRequest, "email and password are required")
+		return
+	}
+	if ok, wait := s.logins.allow(email); !ok {
+		writeRetryAfter(w, wait)
+		return
+	}
+	user, token, err := s.auth.Login(r.Context(), email, req.Password)
 	if err != nil {
+		switch {
+		case errors.Is(err, store.ErrUnauthorized):
+			metrics.Logins.WithLabelValues("unauthorized").Inc()
+		case errors.Is(err, store.ErrInvalidInput):
+			metrics.Logins.WithLabelValues("invalid").Inc()
+		default:
+			metrics.Logins.WithLabelValues("error").Inc()
+		}
 		mapStoreErr(w, err)
 		return
 	}
+	metrics.Logins.WithLabelValues("success").Inc()
 	s.auth.SetSessionCookie(w, token)
 	// session_token is for the SvelteKit BFF to set the browser cookie when it
 	// proxies login. Direct API clients can rely on Set-Cookie alone.
@@ -188,7 +217,7 @@ type createCampaignRequest struct {
 func (s *Server) handleCreateCampaign(w http.ResponseWriter, r *http.Request) {
 	user := userFromCtx(r.Context())
 	var req createCampaignRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := decodeJSON(r, &req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid json")
 		return
 	}
@@ -216,7 +245,10 @@ func (s *Server) handleCreateCampaign(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleGetCampaign(w http.ResponseWriter, r *http.Request) {
 	user := userFromCtx(r.Context())
-	id := r.PathValue("id")
+	id, ok := pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
 	camp, err := s.store.GetCampaign(r.Context(), id, user.OrgID)
 	if err != nil {
 		mapStoreErr(w, err)
@@ -247,7 +279,10 @@ func (s *Server) handleGetCampaign(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleRetryCampaign(w http.ResponseWriter, r *http.Request) {
 	user := userFromCtx(r.Context())
-	id := r.PathValue("id")
+	id, ok := pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
 	camp, err := s.campaigns.RetryLaunch(r.Context(), id, user.OrgID)
 	if err != nil {
 		mapStoreErr(w, err)
@@ -268,21 +303,31 @@ func (s *Server) handleInbox(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleInboxItem(w http.ResponseWriter, r *http.Request) {
 	user := userFromCtx(r.Context())
-	id := r.PathValue("id")
+	id, ok := pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
+	if _, err := s.store.GetInboxItem(r.Context(), id, user.ID); err != nil {
+		mapStoreErr(w, err)
+		return
+	}
+	_ = s.campaigns.Open(r.Context(), id, user.ID, user.OrgID)
+	// Re-read so opened_at stays the real first-open timestamp from the DB.
 	item, err := s.store.GetInboxItem(r.Context(), id, user.ID)
 	if err != nil {
 		mapStoreErr(w, err)
 		return
 	}
-	_ = s.campaigns.Open(r.Context(), id, user.ID, user.OrgID)
-	item.OpenedAt = ptrTime(time.Now().UTC())
 	item.SimURL = s.campaigns.SimURL(item.ClickToken)
 	writeJSON(w, http.StatusOK, item)
 }
 
 func (s *Server) handleOpen(w http.ResponseWriter, r *http.Request) {
 	user := userFromCtx(r.Context())
-	id := r.PathValue("id")
+	id, ok := pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
 	if err := s.campaigns.Open(r.Context(), id, user.ID, user.OrgID); err != nil {
 		mapStoreErr(w, err)
 		return
@@ -292,7 +337,10 @@ func (s *Server) handleOpen(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleReport(w http.ResponseWriter, r *http.Request) {
 	user := userFromCtx(r.Context())
-	id := r.PathValue("id")
+	id, ok := pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
 	if err := s.campaigns.Report(r.Context(), id, user.ID, user.OrgID); err != nil {
 		mapStoreErr(w, err)
 		return
@@ -315,8 +363,6 @@ func (s *Server) handleSim(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func ptrTime(t time.Time) *time.Time { return &t }
-
 func publicUser(u store.User) map[string]any {
 	return map[string]any{
 		"id":           u.ID,
@@ -338,7 +384,14 @@ func writeError(w http.ResponseWriter, status int, msg string) {
 }
 
 func mapStoreErr(w http.ResponseWriter, err error) {
+	var ve store.ValidationError
 	switch {
+	case errors.As(err, &ve):
+		msg := ve.Msg
+		if msg == "" {
+			msg = "invalid input"
+		}
+		writeError(w, http.StatusBadRequest, msg)
 	case errors.Is(err, store.ErrNotFound):
 		writeError(w, http.StatusNotFound, "not found")
 	case errors.Is(err, store.ErrUnauthorized):
