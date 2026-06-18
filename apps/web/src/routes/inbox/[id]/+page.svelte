@@ -1,60 +1,71 @@
 <script lang="ts">
-	import Nav from '$lib/components/Nav.svelte';
+	import { enhance } from '$app/forms';
+	import Alert from '$lib/components/Alert.svelte';
+	import PageShell from '$lib/components/PageShell.svelte';
+	import StatusBadge from '$lib/components/StatusBadge.svelte';
+	import SubmitButton from '$lib/components/SubmitButton.svelte';
 	import { recipientLabel } from '$lib/labels';
+	import { splitMessageBody } from '$lib/message';
 
 	let { data, form } = $props();
+	let pending = $state(false);
 
-	const renderedBody = $derived.by(() => {
+	const segments = $derived.by(() => {
 		const item = data.item;
-		if (!item) return '';
-		const link = item.sim_url ?? '#';
-		return item.body_text.replaceAll('{{LINK}}', link);
+		if (!item) return [];
+		return splitMessageBody(item.body_text, item.sim_url ?? '#');
 	});
 </script>
 
-<div class="banner">SIMULATION — reporting is the goal. The link opens a lesson page, never a password form.</div>
-<Nav user={data.user!} />
+<PageShell title={data.item?.subject ?? 'Message'} user={data.user} width="max-w-3xl">
+	{#snippet banner()}
+		SIMULATION — reporting is the goal. The link opens a lesson page, never a password form.
+	{/snippet}
 
-<main class="mx-auto max-w-3xl px-4 py-8">
 	{#if !data.item}
-		<p class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{data.error}</p>
+		<Alert>{data.error}</Alert>
 	{:else}
-		<p class="mb-4 text-sm">
+		<p class="mb-4 flex flex-wrap items-center gap-3 text-sm">
 			<a class="text-accent hover:underline" href="/inbox">← Inbox</a>
-			<span class="ml-3 text-slate-500">{recipientLabel(data.item)}</span>
+			<StatusBadge label={recipientLabel(data.item)} />
 		</p>
 
 		{#if form?.error}
-			<p class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{form.error}</p>
+			<div class="mb-4"><Alert>{form.error}</Alert></div>
 		{/if}
 
 		<article class="card">
 			<div class="text-xs text-slate-500">{data.item.from_label}</div>
 			<h1 class="mt-1 text-xl font-semibold">{data.item.subject}</h1>
-			<pre
-				class="mt-4 break-words whitespace-pre-wrap font-sans text-sm leading-6 text-slate-800"
-			>{renderedBody}</pre>
-
-			{#if data.item.sim_url}
-				<p class="mt-4 text-sm">
-					Training link:
-					<a
-						class="break-all text-accent underline"
-						href={data.item.sim_url}
-						data-sveltekit-preload-data="off">{data.item.sim_url}</a
-					>
-				</p>
-			{/if}
+			<pre class="mt-4 break-words whitespace-pre-wrap font-sans text-sm leading-6 text-slate-800"
+				>{#each segments as seg}{#if seg.type === 'text'}{seg.value}{:else}<a
+							class="break-all text-accent underline"
+							href={seg.href}
+							data-sveltekit-preload-data="off">{seg.label}</a
+						>{/if}{/each}</pre
+			>
 		</article>
 
 		<div class="mt-4 flex flex-wrap gap-3">
 			{#if !data.item.reported_at}
-				<form method="POST" action="?/report">
-					<button class="btn" type="submit">Report as suspicious</button>
+				<form
+					method="POST"
+					action="?/report"
+					use:enhance={() => {
+						pending = true;
+						return async ({ update }) => {
+							await update();
+							pending = false;
+						};
+					}}
+				>
+					<SubmitButton label="Report as suspicious" pendingLabel="Reporting…" {pending} />
 				</form>
 			{:else}
-				<span class="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Reported — nice work</span>
+				<span class="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
+					>Reported — nice work</span
+				>
 			{/if}
 		</div>
 	{/if}
-</main>
+</PageShell>
