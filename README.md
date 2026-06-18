@@ -73,6 +73,8 @@ make web-check        # svelte-check + vitest
 make ci-local         # api-check + web-check
 make compose-config   # validate compose file
 make lambda-zip       # build Linux bootstrap for LocalStack
+make check-docs       # Markdown links + .env.example refs
+make check-static     # check-docs + metrics contract
 ```
 
 ## Safety
