@@ -14,4 +14,14 @@ describe('safeRedirectPath', () => {
 		expect(safeRedirectPath('javascript:alert(1)')).toBe('/');
 		expect(safeRedirectPath(null)).toBe('/');
 	});
+
+	it('rejects empty and whitespace-only values', () => {
+		expect(safeRedirectPath('')).toBe('/');
+		expect(safeRedirectPath('   ')).toBe('/');
+	});
+
+	it('honours a custom fallback path', () => {
+		expect(safeRedirectPath('https://evil.example', '/inbox')).toBe('/inbox');
+		expect(safeRedirectPath(undefined, '/campaigns')).toBe('/campaigns');
+	});
 });
