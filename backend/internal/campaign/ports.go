@@ -20,9 +20,12 @@ type Store interface {
 	InsertEvent(ctx context.Context, orgID, campaignID, userID, kind, detail string) error
 	GetCampaignStats(ctx context.Context, campaignID string) (store.CampaignStats, error)
 	GetInboxItem(ctx context.Context, recipientID, userID string) (store.InboxItem, error)
-	MarkReported(ctx context.Context, recipientID, userID string) error
-	MarkOpened(ctx context.Context, recipientID, userID string) error
-	MarkClickedByToken(ctx context.Context, token string) (store.Recipient, store.Template, error)
+	// MarkReported returns true when this call newly recorded a report.
+	MarkReported(ctx context.Context, recipientID, userID string) (bool, error)
+	// MarkOpened returns true when this call newly recorded an open.
+	MarkOpened(ctx context.Context, recipientID, userID string) (bool, error)
+	// MarkClickedByToken returns first=true on the first click for the token.
+	MarkClickedByToken(ctx context.Context, token string) (store.Recipient, store.Template, bool, error)
 }
 
 // Publisher publishes deliver jobs.
