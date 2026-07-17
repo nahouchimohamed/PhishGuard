@@ -46,4 +46,14 @@ describe('training safety scan', () => {
 			expect(text).not.toMatch(/<textarea\b/i);
 		}
 	});
+
+	it('never mentions collecting passwords outside login', () => {
+		const offenders = files.filter((f) => {
+			const rel = relative(srcRoot, f).replace(/\\/g, '/');
+			if (rel === 'routes/login/+page.svelte') return false;
+			const text = readFileSync(f, 'utf8').toLowerCase();
+			return text.includes('enter your password') || text.includes('type="password"');
+		});
+		expect(offenders).toEqual([]);
+	});
 });
