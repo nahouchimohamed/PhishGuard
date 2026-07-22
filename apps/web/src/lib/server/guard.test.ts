@@ -40,4 +40,8 @@ describe('requireRole', () => {
 			if (isRedirect(e)) expect(e.location).toBe('/campaigns');
 		}
 	});
+
+	it('returns the user when the role matches', () => {
+		expect(requireRole(admin, 'admin')).toBe(admin);
+	});
 });
