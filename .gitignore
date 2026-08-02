@@ -14,6 +14,8 @@ backend/bin/worker
 
 # Env and secrets
 .env
+.env.*
+!.env.example
 .env.local
 *.pem
 
@@ -27,8 +29,12 @@ Thumbs.db
 # Terraform
 infra/terraform/.terraform/
 infra/terraform/*.tfstate*
+infra/terraform/*.tfvars
+infra/terraform/*.tfplan
 infra/terraform/localstack_providers_override.tf
-infra/terraform/.terraform.lock.hcl
+
+# Vite
+apps/web/vite.config.ts.timestamp-*
 
 # Test / coverage
 coverage/
