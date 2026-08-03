@@ -11,3 +11,7 @@ export function reportRate(stats: { reported: number; delivered: number }): numb
 export function clickRate(stats: { clicked: number; delivered: number }): number {
 	return percent(stats.clicked, stats.delivered);
 }
+
+export function openRate(stats: { opened: number; delivered: number }): number {
+	return percent(stats.opened, stats.delivered);
+}
