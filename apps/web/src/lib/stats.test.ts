@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clickRate, percent, reportRate } from './stats';
+import { clickRate, openRate, percent, reportRate } from './stats';
 
 describe('percent', () => {
 	it('returns 0 for empty or invalid denominators', () => {
@@ -32,5 +32,9 @@ describe('rates', () => {
 
 	it('handles a full report rate', () => {
 		expect(reportRate({ reported: 5, delivered: 5 })).toBe(100);
+	});
+
+	it('computes open rate from delivered messages', () => {
+		expect(openRate({ opened: 1, delivered: 4 })).toBe(25);
 	});
 });
