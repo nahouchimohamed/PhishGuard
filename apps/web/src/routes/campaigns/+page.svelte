@@ -2,7 +2,8 @@
 	import Alert from '$lib/components/Alert.svelte';
 	import PageShell from '$lib/components/PageShell.svelte';
 	import { formatDateTime } from '$lib/format';
-	import { clickRate, reportRate } from '$lib/stats';
+	import { clickTone, reportTone, toneClass } from '$lib/rateTone';
+	import { clickRate, openRate, reportRate } from '$lib/stats';
 
 	let { data } = $props();
 </script>
@@ -32,6 +33,7 @@
 						<th class="px-4 py-3 font-medium" scope="col">Status</th>
 						<th class="px-4 py-3 font-medium" scope="col">Created</th>
 						<th class="px-4 py-3 font-medium" scope="col">Delivered</th>
+						<th class="px-4 py-3 font-medium" scope="col">Open %</th>
 						<th class="px-4 py-3 font-medium" scope="col">Report %</th>
 						<th class="px-4 py-3 font-medium" scope="col">Click %</th>
 					</tr>
@@ -47,8 +49,13 @@
 							<td class="px-4 py-3 capitalize">{c.status}</td>
 							<td class="px-4 py-3">{formatDateTime(c.created_at)}</td>
 							<td class="px-4 py-3">{c.stats?.delivered ?? 0}/{c.stats?.total ?? 0}</td>
-							<td class="px-4 py-3">{c.stats ? reportRate(c.stats) : 0}%</td>
-							<td class="px-4 py-3">{c.stats ? clickRate(c.stats) : 0}%</td>
+							<td class="px-4 py-3">{c.stats ? openRate(c.stats) : 0}%</td>
+							<td class={`px-4 py-3 font-medium ${c.stats ? toneClass(reportTone(reportRate(c.stats))) : ''}`}
+								>{c.stats ? reportRate(c.stats) : 0}%</td
+							>
+							<td class={`px-4 py-3 font-medium ${c.stats ? toneClass(clickTone(clickRate(c.stats))) : ''}`}
+								>{c.stats ? clickRate(c.stats) : 0}%</td
+							>
 						</tr>
 					{/each}
 				</tbody>
