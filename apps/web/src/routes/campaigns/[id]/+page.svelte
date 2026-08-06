@@ -5,7 +5,10 @@
 	const d = $derived(data.detail);
 </script>
 
-<div class="banner">Training mode — watch Grafana at localhost:3001 for the same counters.</div>
+<div class="banner">
+	Training mode — watch Grafana at
+	<a class="underline" href="http://localhost:3002">localhost:3002</a> for the same counters.
+</div>
 <Nav user={data.user!} />
 
 <main class="mx-auto max-w-5xl px-4 py-8">
@@ -48,7 +51,7 @@
 			{/each}
 		</div>
 
-		<div class="card">
+		<div class="card overflow-x-auto">
 			<h2 class="mb-3 font-medium">Recipients</h2>
 			<table class="min-w-full text-left text-sm">
 				<thead class="text-slate-500">
