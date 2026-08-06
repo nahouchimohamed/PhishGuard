@@ -31,12 +31,18 @@
 		<article class="card">
 			<div class="text-xs text-slate-500">{data.item.from_label}</div>
 			<h1 class="mt-1 text-xl font-semibold">{data.item.subject}</h1>
-			<pre class="mt-4 whitespace-pre-wrap font-sans text-sm leading-6 text-slate-800">{renderedBody}</pre>
+			<pre
+				class="mt-4 break-words whitespace-pre-wrap font-sans text-sm leading-6 text-slate-800"
+			>{renderedBody}</pre>
 
 			{#if data.item.sim_url}
 				<p class="mt-4 text-sm">
 					Training link:
-					<a class="break-all text-accent underline" href={data.item.sim_url}>{data.item.sim_url}</a>
+					<a
+						class="break-all text-accent underline"
+						href={data.item.sim_url}
+						data-sveltekit-preload-data="off">{data.item.sim_url}</a
+					>
 				</p>
 			{/if}
 		</article>
