@@ -13,9 +13,7 @@
 
 	{#if data.error}
 		<p class="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{data.error}</p>
-	{/if}
-
-	{#if data.items.length === 0}
+	{:else if data.items.length === 0}
 		<div class="card mt-6 text-slate-600">
 			No delivered messages yet. Ask an admin to launch a campaign, then refresh.
 		</div>
@@ -26,6 +24,7 @@
 					<a
 						class="flex items-start justify-between gap-4 px-4 py-3 hover:bg-slate-50"
 						href={`/inbox/${item.recipient_id}`}
+						data-sveltekit-preload-data="off"
 					>
 						<div>
 							<div class="font-medium">{item.subject}</div>
