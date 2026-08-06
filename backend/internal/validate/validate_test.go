@@ -14,6 +14,10 @@ func TestUUID(t *testing.T) {
 		{"550e8400e29b41d4a716446655440000", true},
 		{"550e8400-e29b-41d4-a716-44665544000g", true},
 		{"550e8400-e29b-41d4-a716-44665544000", true},
+		{"550e8400-e29b-41d4-a716-4466554400000", true},
+		{"550e8400-e29b-61d4-a716-446655440000", false},
+		{"  550e8400-e29b-41d4-a716-446655440000  ", false},
+		{"550e8400-e29b-41d4-g716-446655440000", true},
 	}
 	for _, tt := range tests {
 		err := UUID(tt.in)
@@ -33,6 +37,10 @@ func TestEmail(t *testing.T) {
 		{"", true},
 		{"not-an-email", true},
 		{"@example.com", true},
+		{"user+tag@example.com", false},
+		{"no-at-sign.example.com", true},
+		{"a b@example.com", true},
+		{"admin@phishguard.local", false},
 	}
 	for _, tt := range tests {
 		err := Email(tt.in)
