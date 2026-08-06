@@ -24,4 +24,9 @@ describe('recipientLabel', () => {
 	it('returns delivered', () => {
 		expect(recipientLabel({ delivered_at: '1' })).toBe('Delivered');
 	});
+
+	it('returns pending when undelivered', () => {
+		expect(recipientLabel({})).toBe('Pending');
+		expect(recipientLabel({ delivered_at: null, opened_at: '' })).toBe('Pending');
+	});
 });
