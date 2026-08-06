@@ -4,7 +4,10 @@ PYTHON ?= python
 .PHONY: help up down stop reset logs ps rebuild-backend api-test api-check web-test web-check fmt fmt-check tidy ci-local lambda-zip compose-config check-docs check-static
 
 help:
-	@echo "Targets: up down stop reset logs ps rebuild-backend api-test api-check web-test web-check fmt fmt-check tidy ci-local lambda-zip compose-config check-docs check-static"
+	@echo "PhishGuard simulation platform — common targets:"
+	@echo "  up down stop reset logs ps rebuild-backend"
+	@echo "  api-test api-check web-test web-check fmt fmt-check tidy"
+	@echo "  ci-local lambda-zip compose-config check-docs check-static"
 
 up:
 	$(COMPOSE) up --build -d
