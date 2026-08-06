@@ -28,8 +28,13 @@ export const actions: Actions = {
 		const template_id = String(form.get('template_id') ?? '');
 		const recipient_user_ids = form.getAll('recipient_user_ids').map(String);
 
+		const values = { name, template_id, recipient_user_ids };
+
 		if (!name || !template_id || recipient_user_ids.length === 0) {
-			return fail(400, { error: 'Name, template, and at least one employee are required.' });
+			return fail(400, {
+				error: 'Name, template, and at least one employee are required.',
+				values
+			});
 		}
 
 		const res = await apiFetch<Campaign | { campaign: Campaign; warning?: string }>('/api/campaigns', {
@@ -39,7 +44,7 @@ export const actions: Actions = {
 		});
 
 		if (!res.ok && res.status !== 202) {
-			return fail(res.status, { error: res.error ?? 'Launch failed' });
+			return fail(res.status || 400, { error: res.error ?? 'Launch failed', values });
 		}
 
 		const camp =
