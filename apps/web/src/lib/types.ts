@@ -25,16 +25,42 @@ export type CampaignStats = {
 	reported: number;
 };
 
+export type CampaignStatus = 'draft' | 'launching' | 'active';
+
 export type Campaign = {
 	id: string;
 	org_id: string;
 	created_by: string;
 	template_id: string;
 	name: string;
-	status: string;
+	status: CampaignStatus | string;
 	created_at: string;
 	launched_at?: string | null;
 	stats?: CampaignStats;
+};
+
+export type CampaignDetail = {
+	campaign: Campaign;
+	template: Template;
+	stats: CampaignStats;
+	recipients: RecipientRow[];
+};
+
+export type LoginResponse = {
+	user: User;
+	session_token: string;
+};
+
+export type SimLesson = {
+	campaign_id: string;
+	subject: string;
+	lesson_text: string;
+	name: string;
+};
+
+export type LaunchResponse = {
+	campaign: Campaign;
+	warning?: string;
 };
 
 export type InboxItem = {
