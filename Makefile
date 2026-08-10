@@ -10,21 +10,27 @@ help:
 	@echo "  ci-local lambda-zip compose-config check-docs check-static"
 
 up:
+	@echo "Starting PhishGuard Compose stack..."
 	$(COMPOSE) up --build -d
 
 down:
+	@echo "Stopping Compose services (volumes kept)..."
 	$(COMPOSE) down
 
 stop:
+	@echo "Stopping Compose containers..."
 	$(COMPOSE) stop
 
 reset:
+	@echo "Wiping Compose volumes (DB and Redis data)..."
 	$(COMPOSE) down -v
 
 logs:
+	@echo "Following Compose logs (ctrl-c to stop)..."
 	$(COMPOSE) logs -f --tail=100
 
 ps:
+	@echo "Compose service status:"
 	$(COMPOSE) ps
 
 # Rebuild API + worker after Go changes without restarting the whole stack.
