@@ -1,16 +1,11 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { apiFetch, COOKIE } from '$lib/server/api';
-import type { User } from '$lib/types';
-
-type LoginResponse = {
-	user: User;
-	session_token: string;
-};
+import { homePathFor } from '$lib/roles';
+import type { LoginResponse } from '$lib/types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (locals.user?.role === 'admin') throw redirect(303, '/campaigns');
-	if (locals.user?.role === 'employee') throw redirect(303, '/inbox');
+	if (locals.user) throw redirect(303, homePathFor(locals.user.role));
 	return {};
 };
 
@@ -35,7 +30,6 @@ export const actions: Actions = {
 			maxAge: 60 * 60 * 24 * 7
 		});
 
-		if (res.data.user.role === 'admin') throw redirect(303, '/campaigns');
-		throw redirect(303, '/inbox');
+		throw redirect(303, homePathFor(res.data.user.role));
 	}
 };
