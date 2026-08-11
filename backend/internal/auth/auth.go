@@ -14,13 +14,25 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// userStore is the subset of store.Store used by session auth.
+type userStore interface {
+	GetUserByEmail(ctx context.Context, email string) (store.User, error)
+	CreateSession(ctx context.Context, userID, tokenHash string, expiresAt time.Time) error
+	DeleteSessionByTokenHash(ctx context.Context, tokenHash string) error
+	GetUserBySessionTokenHash(ctx context.Context, tokenHash string) (store.User, error)
+}
+
 type Service struct {
-	store      *store.Store
+	store      userStore
 	cookieName string
 	ttl        time.Duration
 }
 
 func New(st *store.Store, cookieName string, ttl time.Duration) *Service {
+	return &Service{store: st, cookieName: cookieName, ttl: ttl}
+}
+
+func newService(st userStore, cookieName string, ttl time.Duration) *Service {
 	return &Service{store: st, cookieName: cookieName, ttl: ttl}
 }
 
@@ -102,5 +114,10 @@ func randomToken() (string, error) {
 
 // NewClickToken returns an unguessable token for the public simulation URL.
 func NewClickToken() (string, error) {
+	return randomToken()
+}
+
+// NewToken is an alias for NewClickToken for callers that prefer a shorter name.
+func NewToken() (string, error) {
 	return randomToken()
 }
