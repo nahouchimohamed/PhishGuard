@@ -12,7 +12,7 @@
       "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
       "id": 1,
       "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "expr": "phishguard_campaign_launches_total", "legendFormat": "launches", "refId": "A" }],
+      "targets": [{ "expr": "sum(phishguard_campaign_launches_total)", "legendFormat": "launches", "refId": "A" }],
       "title": "Campaign launches",
       "type": "stat"
     },
@@ -22,7 +22,7 @@
       "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
       "id": 2,
       "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "expr": "phishguard_deliveries_total", "legendFormat": "deliveries", "refId": "A" }],
+      "targets": [{ "expr": "sum(phishguard_deliveries_total)", "legendFormat": "deliveries", "refId": "A" }],
       "title": "Deliveries",
       "type": "stat"
     },
@@ -32,7 +32,7 @@
       "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
       "id": 3,
       "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "expr": "phishguard_reports_total", "legendFormat": "reports", "refId": "A" }],
+      "targets": [{ "expr": "sum(phishguard_reports_total)", "legendFormat": "reports", "refId": "A" }],
       "title": "Reports",
       "type": "stat"
     },
@@ -42,7 +42,7 @@
       "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
       "id": 4,
       "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "expr": "phishguard_clicks_total", "legendFormat": "clicks", "refId": "A" }],
+      "targets": [{ "expr": "sum(phishguard_clicks_total)", "legendFormat": "clicks", "refId": "A" }],
       "title": "Clicks",
       "type": "stat"
     },
