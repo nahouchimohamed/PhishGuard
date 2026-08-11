@@ -18,6 +18,11 @@ docker compose -f deploy/docker-compose.yml --env-file .env.example up --build -
 |---------|-----|
 | Web | http://localhost:5173 |
 | API | http://localhost:8080/healthz |
+| API metrics | http://localhost:8080/metrics |
+| Worker metrics | http://localhost:8081/metrics |
+| ElasticMQ UI | http://localhost:9325 |
+| Postgres | localhost:5432 |
+| Redis | localhost:6379 |
 | Prometheus | http://localhost:9090 |
 | Grafana | http://localhost:3002 (admin/admin or anonymous viewer) |
 
@@ -68,11 +73,19 @@ docs/learn/       Short lessons tied to real files
 ## Make targets
 
 ```bash
+make help             # list targets
 make up               # compose up --build -d
-make down             # compose down -v
+make down             # compose down (keeps volumes)
+make stop             # stop containers
+make reset            # compose down -v (wipes DB)
 make logs             # follow logs
 make api-test         # go test ./...
+make api-check        # gofmt + vet + test
 make web-test         # vitest
+make web-check        # svelte-check + vitest
+make ci-local         # api-check + web-check
+make compose-config   # validate compose file
+make lambda-zip       # build Linux bootstrap for LocalStack
 ```
 
 ## Safety
