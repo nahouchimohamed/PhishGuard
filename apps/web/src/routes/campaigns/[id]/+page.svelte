@@ -7,7 +7,8 @@
 	import SubmitButton from '$lib/components/SubmitButton.svelte';
 	import { formatDateTime } from '$lib/format';
 	import { recipientLabel } from '$lib/labels';
-	import { clickRate, reportRate } from '$lib/stats';
+	import { clickTone, reportTone } from '$lib/rateTone';
+	import { clickRate, openRate, reportRate } from '$lib/stats';
 
 	let { data, form } = $props();
 	const d = $derived(data.detail);
@@ -66,12 +67,13 @@
 			<div class="mb-4"><Alert tone="warning">{data.notice}</Alert></div>
 		{/if}
 
-		<div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+		<div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
 			<StatCard label="Total" value={d.stats.total} />
 			<StatCard label="Delivered" value={d.stats.delivered} />
 			<StatCard label="Opened" value={d.stats.opened} />
-			<StatCard label="Report %" value={`${reportRate(d.stats)}%`} />
-			<StatCard label="Click %" value={`${clickRate(d.stats)}%`} />
+			<StatCard label="Open %" value={`${openRate(d.stats)}%`} />
+			<StatCard label="Report %" value={`${reportRate(d.stats)}%`} tone={reportTone(reportRate(d.stats))} />
+			<StatCard label="Click %" value={`${clickRate(d.stats)}%`} tone={clickTone(clickRate(d.stats))} />
 		</div>
 
 		<div class="card overflow-x-auto">
