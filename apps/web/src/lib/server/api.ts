@@ -1,7 +1,6 @@
 import { env } from '$env/dynamic/private';
 import type { Cookies } from '@sveltejs/kit';
-
-const COOKIE = 'phishguard_session';
+import { COOKIE } from '$lib/server/session';
 
 function baseURL(): string {
 	return env.API_BASE_URL || 'http://localhost:8080';
@@ -12,8 +11,12 @@ export type ApiResult<T> = {
 	status: number;
 	data: T | null;
 	error?: string;
-	setCookie?: string | null;
 };
+
+export function apiPath(base: string, ...parts: string[]): string {
+	const encoded = parts.map((p) => encodeURIComponent(p));
+	return [base.replace(/\/$/, ''), ...encoded].join('/');
+}
 
 export async function apiFetch<T>(
 	path: string,
@@ -21,7 +24,6 @@ export async function apiFetch<T>(
 		method?: string;
 		body?: unknown;
 		cookies?: Cookies;
-		cookieHeader?: string | null;
 	} = {}
 ): Promise<ApiResult<T>> {
 	const headers: Record<string, string> = {
@@ -31,24 +33,21 @@ export async function apiFetch<T>(
 		headers['Content-Type'] = 'application/json';
 	}
 
-	const cookie = opts.cookieHeader ?? opts.cookies?.get(COOKIE) ?? null;
+	const cookie = opts.cookies?.get(COOKIE) ?? null;
 	if (cookie) {
 		headers.Cookie = `${COOKIE}=${cookie}`;
 	}
 
-	const res = await fetch(`${baseURL()}${path}`, {
-		method: opts.method ?? (opts.body !== undefined ? 'POST' : 'GET'),
-		headers,
-		body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined
-	});
-
-	const setCookie = res.headers.getSetCookie?.() ?? [];
-	let rawSet: string | null = null;
-	for (const line of setCookie) {
-		if (line.startsWith(`${COOKIE}=`)) {
-			rawSet = line;
-			break;
-		}
+	let res: Response;
+	try {
+		res = await fetch(`${baseURL()}${path}`, {
+			method: opts.method ?? (opts.body !== undefined ? 'POST' : 'GET'),
+			headers,
+			body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+			signal: AbortSignal.timeout(5000)
+		});
+	} catch {
+		return { ok: false, status: 503, data: null, error: 'API unreachable' };
 	}
 
 	let data: T | null = null;
@@ -64,32 +63,11 @@ export async function apiFetch<T>(
 			}
 		} catch {
 			if (!res.ok) error = text;
+			else error = 'Invalid JSON from API';
 		}
 	}
 
-	return { ok: res.ok, status: res.status, data, error, setCookie: rawSet };
-}
-
-export function applySessionCookie(cookies: Cookies, setCookie: string | null | undefined) {
-	if (!setCookie) return;
-	// Parse Max-Age / empty value from Go Set-Cookie.
-	const parts = setCookie.split(';').map((p) => p.trim());
-	const [kv] = parts;
-	const eq = kv.indexOf('=');
-	const value = eq >= 0 ? kv.slice(eq + 1) : '';
-	const maxAgePart = parts.find((p) => p.toLowerCase().startsWith('max-age='));
-	const maxAge = maxAgePart ? Number(maxAgePart.split('=')[1]) : undefined;
-
-	if (!value || maxAge === -1) {
-		cookies.delete(COOKIE, { path: '/' });
-		return;
-	}
-	cookies.set(COOKIE, value, {
-		path: '/',
-		httpOnly: true,
-		sameSite: 'lax',
-		maxAge: Number.isFinite(maxAge) ? maxAge : 60 * 60 * 24 * 7
-	});
+	return { ok: res.ok, status: res.status, data, error };
 }
 
 export { COOKIE };
