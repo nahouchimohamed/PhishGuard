@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { apiFetch, COOKIE } from '$lib/server/api';
+import { apiFetch } from '$lib/server/api';
+import { clearSessionCookie } from '$lib/server/session';
 
 export const load: PageServerLoad = async () => {
 	throw redirect(303, '/login');
@@ -13,7 +14,7 @@ export const actions: Actions = {
 		} catch {
 			// Always clear the local session even if the API is unreachable.
 		}
-		cookies.delete(COOKIE, { path: '/' });
+		clearSessionCookie(cookies);
 		throw redirect(303, '/login');
 	}
 };
