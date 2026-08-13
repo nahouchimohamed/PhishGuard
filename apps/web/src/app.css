@@ -32,4 +32,12 @@
 	.banner {
 		@apply border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-sm text-amber-900;
 	}
+
+	.page-title {
+		@apply text-2xl font-semibold tracking-tight text-ink;
+	}
+
+	.page-subtitle {
+		@apply text-sm text-slate-600;
+	}
 }
