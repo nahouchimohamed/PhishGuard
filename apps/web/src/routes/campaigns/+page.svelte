@@ -14,8 +14,8 @@
 
 	<div class="mb-6 flex items-center justify-between">
 		<div>
-			<h1 class="text-2xl font-semibold">Campaigns</h1>
-			<p class="text-sm text-slate-600">Launch a drill, then watch report vs click rates.</p>
+			<h1 class="page-title">Campaigns</h1>
+			<p class="page-subtitle">Launch a drill, then watch report vs click rates.</p>
 		</div>
 		<a class="btn" href="/campaigns/new">New campaign</a>
 	</div>
