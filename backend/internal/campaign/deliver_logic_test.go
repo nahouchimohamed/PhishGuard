@@ -1,23 +1,34 @@
 package campaign
 
-import "testing"
+import (
+	"context"
+	"testing"
 
-// Documents the idempotency rule enforced by store.MarkDelivered:
-// only the first successful update counts as a new delivery.
-func TestDeliveryCountedOnce(t *testing.T) {
-	alreadyDelivered := false
-	count := 0
-	deliver := func() {
-		if alreadyDelivered {
-			return
-		}
-		alreadyDelivered = true
-		count++
+	"github.com/phishguard/phishguard/internal/store"
+)
+
+func TestDeliverIdempotent(t *testing.T) {
+	st := newFakeStore()
+	st.users["u1"] = store.User{ID: "u1", OrgID: "o1"}
+	st.recipients["r1"] = store.Recipient{ID: "r1", CampaignID: "c1", UserID: "u1"}
+	cache := newFakeCache()
+	svc := newService(st, &fakePublisher{}, cache, "http://localhost")
+
+	ctx := context.Background()
+	if err := svc.Deliver(ctx, "r1", "c1"); err != nil {
+		t.Fatal(err)
 	}
-	deliver()
-	deliver()
-	deliver()
-	if count != 1 {
-		t.Fatalf("expected 1 delivery, got %d", count)
+	if err := svc.Deliver(ctx, "r1", "c1"); err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.Deliver(ctx, "r1", "c1"); err != nil {
+		t.Fatal(err)
+	}
+
+	if len(st.events) != 1 {
+		t.Fatalf("expected 1 delivered event, got %d (%v)", len(st.events), st.events)
+	}
+	if cache.inv != 1 {
+		t.Fatalf("expected 1 cache invalidation, got %d", cache.inv)
 	}
 }
