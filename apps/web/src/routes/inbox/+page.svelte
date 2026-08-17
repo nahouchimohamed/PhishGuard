@@ -12,8 +12,8 @@
 <PageShell title="Inbox" user={data.user} width="max-w-3xl">
 	{#snippet banner()}SIMULATION INBOX — these messages are training drills, never real mail.{/snippet}
 
-	<h1 class="text-2xl font-semibold">Inbox</h1>
-	<p class="mt-1 text-sm text-slate-600">
+	<h1 class="page-title">Inbox</h1>
+	<p class="page-subtitle mt-1">
 		{data.items.length} message{data.items.length === 1 ? '' : 's'}
 		{#if unread > 0}
 			· {unread} unread
