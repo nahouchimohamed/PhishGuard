@@ -17,14 +17,18 @@ import (
 )
 
 type Server struct {
-	auth      *auth.Service
-	store     *store.Store
-	campaigns *campaign.Service
-	cache     *cache.Dashboard
+	auth      authService
+	store     storeAPI
+	campaigns campaignAPI
+	cache     redisPinger
 	mux       *http.ServeMux
 }
 
 func New(authSvc *auth.Service, st *store.Store, camps *campaign.Service, dash *cache.Dashboard) *Server {
+	return newServer(authSvc, st, camps, dash)
+}
+
+func newServer(authSvc authService, st storeAPI, camps campaignAPI, dash redisPinger) *Server {
 	s := &Server{auth: authSvc, store: st, campaigns: camps, cache: dash, mux: http.NewServeMux()}
 	s.routes()
 	return s
