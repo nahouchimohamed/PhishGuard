@@ -12,7 +12,7 @@
 	{#snippet banner()}PhishGuard is a simulation platform — no real email is ever sent.{/snippet}
 
 	<div class="card">
-		<h1 class="text-2xl font-semibold">Sign in</h1>
+		<h1 class="page-title">Sign in</h1>
 		<p class="mt-1 text-sm text-slate-600">
 			Seeded users share password <code class="rounded bg-slate-100 px-1">phishguard-dev</code>
 		</p>

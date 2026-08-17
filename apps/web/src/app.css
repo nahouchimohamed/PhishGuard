@@ -5,6 +5,7 @@
 @layer base {
 	body {
 		min-height: 100vh;
+		@apply bg-gradient-to-b from-slate-50 to-panel text-ink antialiased;
 	}
 
 	a:focus-visible {
