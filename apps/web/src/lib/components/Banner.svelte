@@ -2,7 +2,6 @@
 	let { children }: { children: import('svelte').Snippet } = $props();
 </script>
 
-<!-- Persistent training banner — keep visible on every authenticated page. -->
-<div class="banner" role="note">
+<div class="banner sticky top-0 z-40">
 	{@render children()}
 </div>
