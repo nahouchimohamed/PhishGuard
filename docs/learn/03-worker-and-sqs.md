@@ -12,10 +12,14 @@ Everyday Compose needs an SQS-shaped queue without an AWS account. ElasticMQ spe
 
 ## Loop
 
-1. Long-poll `ReceiveMessage` (wait up to 10s).
+1. Long-poll `ReceiveMessage` (wait up to **10s**, matching `receiveMessageWait` in `elasticmq.conf`).
 2. Call `campaign.Deliver` (idempotent).
 3. `DeleteMessage` on success.
 4. On deliver failure, leave the message — visibility timeout returns it. After 3 receives, ElasticMQ moves it to the DLQ.
+
+## Health
+
+The worker exposes `GET /healthz` and `/metrics` on `:8081` (Compose healthcheck uses `/healthz`).
 
 ## Lambda vs worker
 
