@@ -13,9 +13,10 @@ resource "aws_sqs_queue" "deliveries" {
 }
 
 data "archive_file" "lambda_zip" {
-  type        = "zip"
-  source_file = "${path.module}/../../backend/bin/bootstrap"
-  output_path = "${path.module}/../../backend/bin/function.zip"
+  type             = "zip"
+  source_file      = "${path.module}/../../backend/bin/bootstrap"
+  output_path      = "${path.module}/../../backend/bin/function.zip"
+  output_file_mode = "0755"
 }
 
 resource "aws_iam_role" "lambda" {
@@ -31,6 +32,11 @@ resource "aws_iam_role" "lambda" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_sqs" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole"
+}
+
 resource "aws_lambda_function" "deliver" {
   function_name    = "phishguard-deliver"
   role             = aws_iam_role.lambda.arn
@@ -38,15 +44,14 @@ resource "aws_lambda_function" "deliver" {
   runtime          = "provided.al2023"
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
-  timeout          = 30
+  timeout          = 5
 
   environment {
     variables = {
-      DATABASE_URL   = "postgres://phishguard:phishguard@host.docker.internal:5432/phishguard?sslmode=disable"
-      REDIS_URL      = "redis://host.docker.internal:6379/0"
+      DATABASE_URL   = var.database_url
+      REDIS_URL      = var.redis_url
       SQS_QUEUE_URL  = aws_sqs_queue.deliveries.url
-      AWS_REGION     = var.aws_region
-      PUBLIC_APP_URL = "http://localhost:5173"
+      PUBLIC_APP_URL = var.public_app_url
     }
   }
 }
@@ -56,12 +61,4 @@ resource "aws_lambda_event_source_mapping" "deliveries" {
   function_name    = aws_lambda_function.deliver.arn
   batch_size       = 5
   enabled          = true
-}
-
-output "queue_url" {
-  value = aws_sqs_queue.deliveries.url
-}
-
-output "lambda_name" {
-  value = aws_lambda_function.deliver.function_name
 }
