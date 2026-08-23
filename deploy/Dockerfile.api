@@ -12,7 +12,7 @@ RUN apt-get update \
   && useradd --create-home --uid 10001 appuser
 WORKDIR /app
 COPY --from=build /out/api /app/api
-COPY backend/migrations /app/migrations
 USER appuser
 EXPOSE 8080
+# HEALTHCHECK is defined in deploy/docker-compose.yml (wget /healthz).
 ENTRYPOINT ["/app/api"]
