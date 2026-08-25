@@ -15,6 +15,7 @@ const (
 	StatusDraft     CampaignStatus = "draft"
 	StatusLaunching CampaignStatus = "launching"
 	StatusActive    CampaignStatus = "active"
+	StatusClosed    CampaignStatus = "closed"
 )
 
 type User struct {

@@ -26,7 +26,7 @@ export type CampaignStats = {
 	reported: number;
 };
 
-export type CampaignStatus = 'draft' | 'launching' | 'active';
+export type CampaignStatus = 'draft' | 'launching' | 'active' | 'closed';
 
 export type Campaign = {
 	id: string;
