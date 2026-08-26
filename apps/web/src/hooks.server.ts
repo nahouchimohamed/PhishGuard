@@ -1,9 +1,10 @@
 import { sequence } from '@sveltejs/kit/hooks';
-import type { Handle } from '@sveltejs/kit';
+import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { apiFetch } from '$lib/server/api';
 import { clearSessionCookie, COOKIE } from '$lib/server/session';
 import { securityHeaders } from '$lib/server/headers';
 import type { User } from '$lib/types';
+import { randomUUID } from 'node:crypto';
 
 const sessionHandle: Handle = async ({ event, resolve }) => {
 	const token = event.cookies.get(COOKIE);
@@ -20,3 +21,12 @@ const sessionHandle: Handle = async ({ event, resolve }) => {
 };
 
 export const handle = sequence(sessionHandle, securityHeaders);
+
+export const handleError: HandleServerError = ({ error }) => {
+	const id = randomUUID();
+	console.error('app error', id, error);
+	return {
+		message: 'Something went wrong.',
+		id
+	};
+};
