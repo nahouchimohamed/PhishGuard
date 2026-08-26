@@ -89,3 +89,12 @@ export type RecipientRow = {
 	clicked_at?: string | null;
 	reported_at?: string | null;
 };
+
+export type CampaignEvent = {
+	id: string;
+	campaign_id: string;
+	user_id?: string | null;
+	kind: string;
+	detail: string;
+	created_at: string;
+};

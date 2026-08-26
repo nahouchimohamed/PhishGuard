@@ -108,3 +108,13 @@ type RecipientRow struct {
 	ClickedAt   *time.Time `json:"clicked_at,omitempty"`
 	ReportedAt  *time.Time `json:"reported_at,omitempty"`
 }
+
+type Event struct {
+	ID         string    `json:"id"`
+	OrgID      string    `json:"org_id"`
+	CampaignID string    `json:"campaign_id"`
+	UserID     string    `json:"user_id,omitempty"`
+	Kind       string    `json:"kind"`
+	Detail     string    `json:"detail"`
+	CreatedAt  time.Time `json:"created_at"`
+}
