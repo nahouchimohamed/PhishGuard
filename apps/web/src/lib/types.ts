@@ -45,6 +45,7 @@ export type CampaignDetail = {
 	template: Template;
 	stats: CampaignStats;
 	recipients: RecipientRow[];
+	events?: CampaignEvent[];
 };
 
 export type LoginResponse = {
