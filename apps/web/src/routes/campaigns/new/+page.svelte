@@ -1,21 +1,25 @@
 <script lang="ts">
-	import Nav from '$lib/components/Nav.svelte';
+	import { enhance } from '$app/forms';
+	import Alert from '$lib/components/Alert.svelte';
+	import PageShell from '$lib/components/PageShell.svelte';
+	import SubmitButton from '$lib/components/SubmitButton.svelte';
+
 	let { data, form } = $props();
+	let pending = $state(false);
 </script>
 
-<div class="banner">Training mode — templates are seeded and read-only.</div>
-<Nav user={data.user!} />
+<PageShell title="New campaign" user={data.user} width="max-w-2xl">
+	{#snippet banner()}Training mode — templates are seeded and read-only.{/snippet}
 
-<main class="mx-auto max-w-2xl px-4 py-8">
 	<h1 class="text-2xl font-semibold">New campaign</h1>
 	<p class="mt-1 text-sm text-slate-600">
 		Commit-then-publish: the API saves recipients, then enqueues one SQS message each.
 	</p>
 
 	{#if form?.error || data.error}
-		<p class="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-			{form?.error ?? data.error}
-		</p>
+		<div class="mt-4">
+			<Alert>{form?.error ?? data.error}</Alert>
+		</div>
 	{/if}
 
 	{#if data.templates.length === 0 || data.employees.length === 0}
@@ -27,21 +31,43 @@
 			{/if}
 		</div>
 	{:else}
-		<form method="POST" class="card mt-6 space-y-5">
+		<form
+			method="POST"
+			class="card mt-6 space-y-5"
+			use:enhance={() => {
+				pending = true;
+				return async ({ update }) => {
+					await update();
+					pending = false;
+				};
+			}}
+		>
 			<label class="block text-sm">
 				<span class="mb-1 block font-medium">Campaign name</span>
 				<input
 					class="input"
 					name="name"
 					required
+					maxlength="120"
 					placeholder="Q1 password-expiry drill"
 					value={form?.values?.name ?? ''}
+					aria-invalid={form?.errors?.name ? 'true' : undefined}
+					aria-describedby={form?.errors?.name ? 'name-error' : undefined}
 				/>
+				{#if form?.errors?.name}
+					<span id="name-error" class="mt-1 block text-xs text-red-700">{form.errors.name}</span>
+				{/if}
 			</label>
 
 			<label class="block text-sm">
 				<span class="mb-1 block font-medium">Template</span>
-				<select class="input" name="template_id" required>
+				<select
+					class="input"
+					name="template_id"
+					required
+					aria-invalid={form?.errors?.template_id ? 'true' : undefined}
+					aria-describedby={form?.errors?.template_id ? 'template-error' : undefined}
+				>
 					<option value="">Select a template</option>
 					{#each data.templates as t}
 						<option value={t.id} selected={form?.values?.template_id === t.id}
@@ -49,6 +75,11 @@
 						>
 					{/each}
 				</select>
+				{#if form?.errors?.template_id}
+					<span id="template-error" class="mt-1 block text-xs text-red-700"
+						>{form.errors.template_id}</span
+					>
+				{/if}
 			</label>
 
 			<fieldset>
@@ -68,12 +99,15 @@
 						</label>
 					{/each}
 				</div>
+				{#if form?.errors?.recipient_user_ids}
+					<span class="mt-1 block text-xs text-red-700">{form.errors.recipient_user_ids}</span>
+				{/if}
 			</fieldset>
 
 			<div class="flex gap-3">
-				<button class="btn" type="submit">Launch</button>
+				<SubmitButton label="Launch" pendingLabel="Launching…" {pending} />
 				<a class="btn-secondary" href="/campaigns">Cancel</a>
 			</div>
 		</form>
 	{/if}
-</main>
+</PageShell>

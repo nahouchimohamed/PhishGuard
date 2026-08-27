@@ -4,8 +4,10 @@ import { apiFetch } from '$lib/server/api';
 import { friendlyError } from '$lib/server/errors';
 import { requireRole } from '$lib/server/guard';
 import { parseLaunchResponse } from '$lib/server/launch';
-import { validateCampaignForm } from '$lib/validate';
+import { validateCampaignForm, type CampaignFormErrors } from '$lib/validate';
 import type { Campaign, LaunchResponse, Template, User } from '$lib/types';
+
+const noFieldErrors: CampaignFormErrors = {};
 
 export const load: PageServerLoad = async ({ locals, cookies, url }) => {
 	requireRole(locals.user, 'admin', url.pathname);
@@ -54,13 +56,18 @@ export const actions: Actions = {
 		if (!res.ok && res.status !== 202) {
 			return fail(res.status || 400, {
 				error: friendlyError(res.status, res.error),
+				errors: noFieldErrors,
 				values: validated.values
 			});
 		}
 
 		const parsed = parseLaunchResponse(res.status, res.data);
 		if (!parsed.ok) {
-			return fail(502, { error: parsed.error, values: validated.values });
+			return fail(502, {
+				error: parsed.error,
+				errors: noFieldErrors,
+				values: validated.values
+			});
 		}
 
 		const notice = parsed.incomplete ? '?notice=launch-incomplete' : '';
