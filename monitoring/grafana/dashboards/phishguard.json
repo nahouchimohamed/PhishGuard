@@ -23,7 +23,7 @@
       "id": 2,
       "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "targets": [{ "expr": "sum(phishguard_deliveries_total)", "legendFormat": "deliveries", "refId": "A" }],
-      "title": "Deliveries",
+      "title": "Inbox deliveries (worker total)",
       "type": "stat"
     },
     {
@@ -33,7 +33,7 @@
       "id": 3,
       "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "targets": [{ "expr": "sum(phishguard_reports_total)", "legendFormat": "reports", "refId": "A" }],
-      "title": "Reports",
+      "title": "Employee reports (API total)",
       "type": "stat"
     },
     {
