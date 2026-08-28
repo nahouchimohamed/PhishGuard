@@ -1,18 +1,28 @@
 <script lang="ts">
-	import Nav from '$lib/components/Nav.svelte';
+	import Alert from '$lib/components/Alert.svelte';
+	import PageShell from '$lib/components/PageShell.svelte';
+	import StatusBadge from '$lib/components/StatusBadge.svelte';
+	import { formatDateTime } from '$lib/format';
 	import { recipientLabel } from '$lib/labels';
+
 	let { data } = $props();
+	const unread = $derived(data.items.filter((i) => !i.opened_at).length);
 </script>
 
-<div class="banner">SIMULATION INBOX — these messages are training drills, not real mail.</div>
-<Nav user={data.user!} />
+<PageShell title="Inbox" user={data.user} width="max-w-3xl">
+	{#snippet banner()}SIMULATION INBOX — these messages are training drills, not real mail.{/snippet}
 
-<main class="mx-auto max-w-3xl px-4 py-8">
 	<h1 class="text-2xl font-semibold">Inbox</h1>
+	<p class="mt-1 text-sm text-slate-600">
+		{data.items.length} message{data.items.length === 1 ? '' : 's'}
+		{#if unread > 0}
+			· {unread} unread
+		{/if}
+	</p>
 	<p class="mt-1 text-sm text-slate-600">Open a message, then Report it or follow the training link.</p>
 
 	{#if data.error}
-		<p class="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{data.error}</p>
+		<div class="mt-4"><Alert>{data.error}</Alert></div>
 	{:else if data.items.length === 0}
 		<div class="card mt-6 text-slate-600">
 			No delivered messages yet. Ask an admin to launch a campaign, then refresh.
@@ -23,17 +33,23 @@
 				<li>
 					<a
 						class="flex items-start justify-between gap-4 px-4 py-3 hover:bg-slate-50"
+						class:bg-teal-50={!item.opened_at}
 						href={`/inbox/${item.recipient_id}`}
 						data-sveltekit-preload-data="off"
 					>
 						<div>
-							<div class="font-medium">{item.subject}</div>
-							<div class="text-xs text-slate-500">{item.from_label}</div>
+							<div class="font-medium" class:font-semibold={!item.opened_at}>{item.subject}</div>
+							<div class="text-xs text-slate-500">
+								{item.from_label}
+								{#if item.delivered_at}
+									· {formatDateTime(item.delivered_at)}
+								{/if}
+							</div>
 						</div>
-						<span class="shrink-0 text-xs font-medium text-slate-600">{recipientLabel(item)}</span>
+						<StatusBadge label={recipientLabel(item)} />
 					</a>
 				</li>
 			{/each}
 		</ul>
 	{/if}
-</main>
+</PageShell>
