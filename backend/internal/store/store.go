@@ -562,3 +562,53 @@ func (s *Store) ListUndeliveredRecipientIDs(ctx context.Context, campaignID stri
 	}
 	return ids, rows.Err()
 }
+
+func (s *Store) ListEvents(ctx context.Context, campaignID, orgID string) ([]Event, error) {
+	rows, err := s.pool.Query(ctx, `
+		SELECT e.id, e.org_id, COALESCE(e.campaign_id::text, ''), COALESCE(e.user_id::text, ''),
+		       e.kind, e.detail, e.created_at
+		FROM events e
+		JOIN campaigns c ON c.id = e.campaign_id
+		WHERE e.campaign_id = $1 AND c.org_id = $2
+		ORDER BY e.created_at ASC
+		LIMIT 200
+	`, campaignID, orgID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []Event
+	for rows.Next() {
+		var e Event
+		if err := rows.Scan(&e.ID, &e.OrgID, &e.CampaignID, &e.UserID, &e.Kind, &e.Detail, &e.CreatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, e)
+	}
+	if out == nil {
+		out = []Event{}
+	}
+	return out, rows.Err()
+}
+
+func (s *Store) CloseCampaign(ctx context.Context, id, orgID string) (Campaign, error) {
+	var c Campaign
+	err := s.pool.QueryRow(ctx, `
+		UPDATE campaigns
+		SET status = 'closed'
+		WHERE id = $1 AND org_id = $2 AND status IN ('active', 'launching')
+		RETURNING id, org_id, created_by, template_id, name, status, created_at, launched_at
+	`, id, orgID).Scan(&c.ID, &c.OrgID, &c.CreatedBy, &c.TemplateID, &c.Name, &c.Status, &c.CreatedAt, &c.LaunchedAt)
+	if errors.Is(err, pgx.ErrNoRows) {
+		existing, gerr := s.GetCampaign(ctx, id, orgID)
+		if gerr != nil {
+			return Campaign{}, gerr
+		}
+		if existing.Status == StatusClosed {
+			return existing, nil
+		}
+		return Campaign{}, ErrConflict
+	}
+	return c, err
+}
