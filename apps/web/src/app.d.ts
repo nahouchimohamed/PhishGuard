@@ -3,6 +3,10 @@ declare global {
 		interface Locals {
 			user: import('$lib/types').User | null;
 		}
+		interface Error {
+			message: string;
+			id?: string;
+		}
 	}
 }
 
