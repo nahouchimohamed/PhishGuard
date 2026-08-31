@@ -1,10 +1,16 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
+	import Alert from '$lib/components/Alert.svelte';
+	import PageShell from '$lib/components/PageShell.svelte';
+	import SubmitButton from '$lib/components/SubmitButton.svelte';
+
 	let { form } = $props();
+	let pending = $state(false);
 </script>
 
-<div class="banner">PhishGuard is a local training simulator. No real email is sent.</div>
+<PageShell title="Sign in" width="max-w-md">
+	{#snippet banner()}PhishGuard is a local training simulator. No real email is sent.{/snippet}
 
-<main class="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center px-4">
 	<div class="card">
 		<h1 class="text-2xl font-semibold">Sign in</h1>
 		<p class="mt-1 text-sm text-slate-600">
@@ -12,10 +18,20 @@
 		</p>
 
 		{#if form?.error}
-			<p class="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{form.error}</p>
+			<div class="mt-4"><Alert>{form.error}</Alert></div>
 		{/if}
 
-		<form method="POST" class="mt-6 space-y-4">
+		<form
+			method="POST"
+			class="mt-6 space-y-4"
+			use:enhance={() => {
+				pending = true;
+				return async ({ update }) => {
+					await update();
+					pending = false;
+				};
+			}}
+		>
 			<label class="block text-sm">
 				<span class="mb-1 block font-medium">Email</span>
 				<input
@@ -38,7 +54,7 @@
 					value="phishguard-dev"
 				/>
 			</label>
-			<button class="btn w-full" type="submit">Continue</button>
+			<SubmitButton class="btn w-full" label="Continue" pendingLabel="Signing in…" {pending} />
 		</form>
 
 		<ul class="mt-6 space-y-1 text-xs text-slate-500">
@@ -46,4 +62,4 @@
 			<li>Employees: alice@ / bob@ / cara@phishguard.local</li>
 		</ul>
 	</div>
-</main>
+</PageShell>
