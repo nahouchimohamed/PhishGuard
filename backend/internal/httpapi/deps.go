@@ -27,6 +27,9 @@ type storeAPI interface {
 	GetCampaign(ctx context.Context, id, orgID string) (store.Campaign, error)
 	GetTemplate(ctx context.Context, id, orgID string) (store.Template, error)
 	ListRecipientRows(ctx context.Context, campaignID string) ([]store.RecipientRow, error)
+	ListEvents(ctx context.Context, campaignID, orgID string) ([]store.Event, error)
+	CloseCampaign(ctx context.Context, id, orgID string) (store.Campaign, error)
+	InsertEvent(ctx context.Context, orgID, campaignID, userID, kind, detail string) error
 	ListInbox(ctx context.Context, userID string) ([]store.InboxItem, error)
 	GetInboxItem(ctx context.Context, recipientID, userID string) (store.InboxItem, error)
 }

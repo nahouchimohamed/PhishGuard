@@ -54,6 +54,15 @@ func (f *fakeStoreAPI) GetTemplate(ctx context.Context, id, orgID string) (store
 func (f *fakeStoreAPI) ListRecipientRows(ctx context.Context, campaignID string) ([]store.RecipientRow, error) {
 	return nil, nil
 }
+func (f *fakeStoreAPI) ListEvents(ctx context.Context, campaignID, orgID string) ([]store.Event, error) {
+	return nil, nil
+}
+func (f *fakeStoreAPI) CloseCampaign(ctx context.Context, id, orgID string) (store.Campaign, error) {
+	return store.Campaign{}, store.ErrNotFound
+}
+func (f *fakeStoreAPI) InsertEvent(ctx context.Context, orgID, campaignID, userID, kind, detail string) error {
+	return nil
+}
 func (f *fakeStoreAPI) ListInbox(ctx context.Context, userID string) ([]store.InboxItem, error) {
 	return nil, nil
 }
