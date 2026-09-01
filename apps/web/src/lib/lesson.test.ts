@@ -22,4 +22,17 @@ describe('parseLesson', () => {
 	it('handles empty input', () => {
 		expect(parseLesson('')).toEqual({ intro: '', redFlags: [], goodHabit: '' });
 	});
+
+	it('parses a good habit without red flags', () => {
+		const parsed = parseLesson('Stay calm.\nGood habit: Pause before clicking.');
+		expect(parsed.intro).toBe('Stay calm.');
+		expect(parsed.redFlags).toEqual([]);
+		expect(parsed.goodHabit).toBe('Pause before clicking.');
+	});
+
+	it('accepts semicolon-separated red flags', () => {
+		const parsed = parseLesson('Tip.\nRed flags:\nodd domain; urgent tone\nGood habit: Ask IT.');
+		expect(parsed.redFlags).toEqual(['odd domain', 'urgent tone']);
+		expect(parsed.goodHabit).toBe('Ask IT.');
+	});
 });

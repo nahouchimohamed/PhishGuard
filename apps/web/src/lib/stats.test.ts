@@ -19,4 +19,13 @@ describe('rates', () => {
 		expect(reportRate({ reported: 1, delivered: 4 })).toBe(25);
 		expect(clickRate({ clicked: 1, delivered: 5 })).toBe(20);
 	});
+
+	it('returns 0 when nothing was delivered', () => {
+		expect(reportRate({ reported: 2, delivered: 0 })).toBe(0);
+		expect(clickRate({ clicked: 3, delivered: 0 })).toBe(0);
+	});
+
+	it('handles a full report rate', () => {
+		expect(reportRate({ reported: 5, delivered: 5 })).toBe(100);
+	});
 });
