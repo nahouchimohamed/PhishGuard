@@ -61,6 +61,9 @@ func (s *Server) routes() {
 	s.mux.Handle("POST /api/campaigns", metrics.Middleware("/api/campaigns", s.requireRole(store.RoleAdmin, s.handleCreateCampaign)))
 	s.mux.Handle("GET /api/campaigns/{id}", metrics.Middleware("/api/campaigns/{id}", s.requireRole(store.RoleAdmin, s.handleGetCampaign)))
 	s.mux.Handle("POST /api/campaigns/{id}/retry", metrics.Middleware("/api/campaigns/{id}/retry", s.requireRole(store.RoleAdmin, s.handleRetryCampaign)))
+	s.mux.Handle("POST /api/campaigns/{id}/close", metrics.Middleware("/api/campaigns/{id}/close", s.requireRole(store.RoleAdmin, s.handleCloseCampaign)))
+	s.mux.Handle("GET /api/campaigns/{id}/events", metrics.Middleware("/api/campaigns/{id}/events", s.requireRole(store.RoleAdmin, s.handleListCampaignEvents)))
+	s.mux.Handle("GET /api/campaigns/{id}/export", metrics.Middleware("/api/campaigns/{id}/export", s.requireRole(store.RoleAdmin, s.handleExportCampaign)))
 
 	s.mux.Handle("GET /api/inbox", metrics.Middleware("/api/inbox", s.requireRole(store.RoleEmployee, s.handleInbox)))
 	s.mux.Handle("GET /api/inbox/{id}", metrics.Middleware("/api/inbox/{id}", s.requireRole(store.RoleEmployee, s.handleInboxItem)))
