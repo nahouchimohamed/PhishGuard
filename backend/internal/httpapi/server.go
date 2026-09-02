@@ -272,11 +272,17 @@ func (s *Server) handleGetCampaign(w http.ResponseWriter, r *http.Request) {
 		mapStoreErr(w, err)
 		return
 	}
+	events, err := s.store.ListEvents(r.Context(), camp.ID, user.OrgID)
+	if err != nil {
+		mapStoreErr(w, err)
+		return
+	}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"campaign":   camp,
 		"template":   tmpl,
 		"stats":      stats,
 		"recipients": recs,
+		"events":     events,
 	})
 }
 
