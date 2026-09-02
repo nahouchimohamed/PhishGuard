@@ -18,6 +18,20 @@ var (
 	ErrInvalidInput = errors.New("invalid input")
 )
 
+// ValidationError wraps ErrInvalidInput with a clearer client-facing message.
+type ValidationError struct {
+	Msg string
+}
+
+func (e ValidationError) Error() string {
+	if e.Msg == "" {
+		return ErrInvalidInput.Error()
+	}
+	return e.Msg
+}
+
+func (e ValidationError) Unwrap() error { return ErrInvalidInput }
+
 type Store struct {
 	pool *pgxpool.Pool
 }
@@ -407,41 +421,70 @@ func (s *Store) GetInboxItem(ctx context.Context, recipientID, userID string) (I
 	return item, err
 }
 
-func (s *Store) MarkOpened(ctx context.Context, recipientID, userID string) error {
+// MarkOpened records the first open. Returns (true, nil) when newly opened,
+// (false, nil) when already opened, or ErrNotFound when the inbox row is missing.
+// Unit-tested via campaign fakes; requires live Postgres for integration coverage.
+func (s *Store) MarkOpened(ctx context.Context, recipientID, userID string) (bool, error) {
 	tag, err := s.pool.Exec(ctx, `
 		UPDATE campaign_recipients
-		SET opened_at = COALESCE(opened_at, now())
-		WHERE id = $1 AND user_id = $2 AND delivered_at IS NOT NULL
+		SET opened_at = now()
+		WHERE id = $1 AND user_id = $2 AND delivered_at IS NOT NULL AND opened_at IS NULL
 	`, recipientID, userID)
 	if err != nil {
-		return err
+		return false, err
 	}
-	if tag.RowsAffected() == 0 {
-		return ErrNotFound
+	if tag.RowsAffected() == 1 {
+		return true, nil
 	}
-	return nil
+	var exists bool
+	err = s.pool.QueryRow(ctx, `
+		SELECT true FROM campaign_recipients
+		WHERE id = $1 AND user_id = $2 AND delivered_at IS NOT NULL
+	`, recipientID, userID).Scan(&exists)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return false, ErrNotFound
+	}
+	if err != nil {
+		return false, err
+	}
+	return false, nil
 }
 
-func (s *Store) MarkReported(ctx context.Context, recipientID, userID string) error {
+// MarkReported records the first report. Returns (true, nil) when newly reported.
+// Unit-tested via campaign fakes; requires live Postgres for integration coverage.
+func (s *Store) MarkReported(ctx context.Context, recipientID, userID string) (bool, error) {
 	tag, err := s.pool.Exec(ctx, `
 		UPDATE campaign_recipients
-		SET reported_at = COALESCE(reported_at, now()),
+		SET reported_at = now(),
 		    opened_at = COALESCE(opened_at, now())
-		WHERE id = $1 AND user_id = $2 AND delivered_at IS NOT NULL
+		WHERE id = $1 AND user_id = $2 AND delivered_at IS NOT NULL AND reported_at IS NULL
 	`, recipientID, userID)
 	if err != nil {
-		return err
+		return false, err
 	}
-	if tag.RowsAffected() == 0 {
-		return ErrNotFound
+	if tag.RowsAffected() == 1 {
+		return true, nil
 	}
-	return nil
+	var exists bool
+	err = s.pool.QueryRow(ctx, `
+		SELECT true FROM campaign_recipients
+		WHERE id = $1 AND user_id = $2 AND delivered_at IS NOT NULL
+	`, recipientID, userID).Scan(&exists)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return false, ErrNotFound
+	}
+	if err != nil {
+		return false, err
+	}
+	return false, nil
 }
 
-func (s *Store) MarkClickedByToken(ctx context.Context, token string) (Recipient, Template, error) {
+// MarkClickedByToken records a click. first is true only on the first click for the token.
+// Unit-tested via campaign fakes; requires live Postgres for integration coverage.
+func (s *Store) MarkClickedByToken(ctx context.Context, token string) (Recipient, Template, bool, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
-		return Recipient{}, Template{}, err
+		return Recipient{}, Template{}, false, err
 	}
 	defer tx.Rollback(ctx)
 
@@ -461,23 +504,24 @@ func (s *Store) MarkClickedByToken(ctx context.Context, token string) (Recipient
 		&t.ID, &t.OrgID, &t.Name, &t.Subject, &t.BodyText, &t.LessonText, &t.CreatedAt,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return Recipient{}, Template{}, ErrNotFound
+		return Recipient{}, Template{}, false, ErrNotFound
 	}
 	if err != nil {
-		return Recipient{}, Template{}, err
+		return Recipient{}, Template{}, false, err
 	}
 
+	first := r.ClickedAt == nil
 	if _, err := tx.Exec(ctx, `
 		UPDATE campaign_recipients
 		SET clicked_at = COALESCE(clicked_at, now()),
 		    opened_at = COALESCE(opened_at, now())
 		WHERE id = $1
 	`, r.ID); err != nil {
-		return Recipient{}, Template{}, err
+		return Recipient{}, Template{}, false, err
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return Recipient{}, Template{}, err
+		return Recipient{}, Template{}, false, err
 	}
 
 	now := time.Now().UTC()
@@ -487,7 +531,7 @@ func (s *Store) MarkClickedByToken(ctx context.Context, token string) (Recipient
 	if r.OpenedAt == nil {
 		r.OpenedAt = &now
 	}
-	return r, t, nil
+	return r, t, first, nil
 }
 
 func (s *Store) InsertEvent(ctx context.Context, orgID, campaignID, userID, kind, detail string) error {

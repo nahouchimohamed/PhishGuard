@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/phishguard/phishguard/internal/queue"
 	"github.com/phishguard/phishguard/internal/store"
@@ -21,6 +22,11 @@ type fakeStore struct {
 	inbox       map[string]store.InboxItem
 	events      []string
 	delivered   map[string]bool
+	opened      map[string]bool
+	reported    map[string]bool
+	clicked     map[string]bool
+	byToken     map[string]string // token -> recipientID
+	templatesBy map[string]store.Template
 	createSeq   int
 	failCreate  error
 	failMarkAct error
@@ -35,6 +41,10 @@ func newFakeStore() *fakeStore {
 		stats:      map[string]store.CampaignStats{},
 		inbox:      map[string]store.InboxItem{},
 		delivered:  map[string]bool{},
+		opened:     map[string]bool{},
+		reported:   map[string]bool{},
+		clicked:    map[string]bool{},
+		byToken:    map[string]string{},
 	}
 }
 
@@ -76,6 +86,9 @@ func (f *fakeStore) CreateCampaignWithRecipients(ctx context.Context, orgID, cre
 			CampaignID: cid,
 			UserID:     uid,
 			ClickToken: tok,
+		}
+		if tok != "" {
+			f.byToken[tok] = rid
 		}
 	}
 	return c, ids, nil
@@ -161,23 +174,87 @@ func (f *fakeStore) GetCampaignStats(ctx context.Context, campaignID string) (st
 }
 
 func (f *fakeStore) GetInboxItem(ctx context.Context, recipientID, userID string) (store.InboxItem, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	item, ok := f.inbox[recipientID]
 	if !ok {
 		return store.InboxItem{}, store.ErrNotFound
 	}
+	if f.opened[recipientID] && item.OpenedAt == nil {
+		now := time.Now().UTC()
+		item.OpenedAt = &now
+		f.inbox[recipientID] = item
+	}
+	if f.reported[recipientID] && item.ReportedAt == nil {
+		now := time.Now().UTC()
+		item.ReportedAt = &now
+		f.inbox[recipientID] = item
+	}
 	return item, nil
 }
 
-func (f *fakeStore) MarkReported(ctx context.Context, recipientID, userID string) error {
-	return nil
+func (f *fakeStore) MarkReported(ctx context.Context, recipientID, userID string) (bool, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if _, ok := f.inbox[recipientID]; !ok {
+		if _, ok := f.recipients[recipientID]; !ok {
+			return false, store.ErrNotFound
+		}
+	}
+	if f.reported[recipientID] {
+		return false, nil
+	}
+	f.reported[recipientID] = true
+	f.opened[recipientID] = true
+	return true, nil
 }
 
-func (f *fakeStore) MarkOpened(ctx context.Context, recipientID, userID string) error {
-	return nil
+func (f *fakeStore) MarkOpened(ctx context.Context, recipientID, userID string) (bool, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if _, ok := f.inbox[recipientID]; !ok {
+		if _, ok := f.recipients[recipientID]; !ok {
+			return false, store.ErrNotFound
+		}
+	}
+	if f.opened[recipientID] {
+		return false, nil
+	}
+	f.opened[recipientID] = true
+	return true, nil
 }
 
-func (f *fakeStore) MarkClickedByToken(ctx context.Context, token string) (store.Recipient, store.Template, error) {
-	return store.Recipient{}, store.Template{}, store.ErrNotFound
+func (f *fakeStore) MarkClickedByToken(ctx context.Context, token string) (store.Recipient, store.Template, bool, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	rid, ok := f.byToken[token]
+	if !ok {
+		return store.Recipient{}, store.Template{}, false, store.ErrNotFound
+	}
+	r, ok := f.recipients[rid]
+	if !ok {
+		return store.Recipient{}, store.Template{}, false, store.ErrNotFound
+	}
+	c, ok := f.campaigns[r.CampaignID]
+	if !ok {
+		return store.Recipient{}, store.Template{}, false, store.ErrNotFound
+	}
+	tmpl, ok := f.templates[c.TemplateID]
+	if !ok {
+		return store.Recipient{}, store.Template{}, false, store.ErrNotFound
+	}
+	first := !f.clicked[rid]
+	f.clicked[rid] = true
+	f.opened[rid] = true
+	now := time.Now().UTC()
+	if r.ClickedAt == nil {
+		r.ClickedAt = &now
+	}
+	if r.OpenedAt == nil {
+		r.OpenedAt = &now
+	}
+	f.recipients[rid] = r
+	return r, tmpl, first, nil
 }
 
 type fakePublisher struct {
@@ -189,6 +266,9 @@ type fakePublisher struct {
 }
 
 func (p *fakePublisher) PublishDeliver(ctx context.Context, msg queue.DeliverMessage) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.count++
