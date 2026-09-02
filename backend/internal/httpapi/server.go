@@ -286,6 +286,86 @@ func (s *Server) handleGetCampaign(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (s *Server) handleCloseCampaign(w http.ResponseWriter, r *http.Request) {
+	user := userFromCtx(r.Context())
+	id, ok := pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
+	camp, err := s.store.CloseCampaign(r.Context(), id, user.OrgID)
+	if err != nil {
+		mapStoreErr(w, err)
+		return
+	}
+	_ = s.store.InsertEvent(r.Context(), user.OrgID, camp.ID, user.ID, "closed", "Campaign closed by admin")
+	writeJSON(w, http.StatusOK, camp)
+}
+
+func (s *Server) handleListCampaignEvents(w http.ResponseWriter, r *http.Request) {
+	user := userFromCtx(r.Context())
+	id, ok := pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
+	if _, err := s.store.GetCampaign(r.Context(), id, user.OrgID); err != nil {
+		mapStoreErr(w, err)
+		return
+	}
+	events, err := s.store.ListEvents(r.Context(), id, user.OrgID)
+	if err != nil {
+		mapStoreErr(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, events)
+}
+
+func (s *Server) handleExportCampaign(w http.ResponseWriter, r *http.Request) {
+	user := userFromCtx(r.Context())
+	id, ok := pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
+	if _, err := s.store.GetCampaign(r.Context(), id, user.OrgID); err != nil {
+		mapStoreErr(w, err)
+		return
+	}
+	recs, err := s.store.ListRecipientRows(r.Context(), id)
+	if err != nil {
+		mapStoreErr(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="campaign-`+id+`.csv"`)
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("recipient_id,email,display_name,delivered_at,opened_at,clicked_at,reported_at\n"))
+	for _, row := range recs {
+		line := strings.Join([]string{
+			row.RecipientID,
+			row.Email,
+			csvField(row.DisplayName),
+			tsCSV(row.DeliveredAt),
+			tsCSV(row.OpenedAt),
+			tsCSV(row.ClickedAt),
+			tsCSV(row.ReportedAt),
+		}, ",") + "\n"
+		_, _ = w.Write([]byte(line))
+	}
+}
+
+func csvField(v string) string {
+	if strings.ContainsAny(v, ",\"\n") {
+		return `"` + strings.ReplaceAll(v, `"`, `""`) + `"`
+	}
+	return v
+}
+
+func tsCSV(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+	return t.UTC().Format(time.RFC3339)
+}
+
 func (s *Server) handleRetryCampaign(w http.ResponseWriter, r *http.Request) {
 	user := userFromCtx(r.Context())
 	id, ok := pathUUID(w, r, "id")
