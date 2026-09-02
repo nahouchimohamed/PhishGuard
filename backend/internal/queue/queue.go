@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -16,6 +17,17 @@ import (
 type DeliverMessage struct {
 	RecipientID string `json:"recipient_id"`
 	CampaignID  string `json:"campaign_id"`
+}
+
+// Validate rejects empty or whitespace-only identifiers (poison to the worker).
+func (m DeliverMessage) Validate() error {
+	if strings.TrimSpace(m.RecipientID) == "" {
+		return fmt.Errorf("recipient_id is required")
+	}
+	if strings.TrimSpace(m.CampaignID) == "" {
+		return fmt.Errorf("campaign_id is required")
+	}
+	return nil
 }
 
 type Client struct {
