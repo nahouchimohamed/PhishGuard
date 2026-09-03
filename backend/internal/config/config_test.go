@@ -19,6 +19,7 @@ func TestLoadDefaults(t *testing.T) {
 	t.Setenv("SEED_PASSWORD", "")
 	t.Setenv("SESSION_COOKIE_NAME", "")
 	t.Setenv("SESSION_TTL_HOURS", "")
+	t.Setenv("SESSION_COOKIE_SECURE", "")
 	t.Setenv("SQS_ENDPOINT", "")
 	t.Setenv("AWS_ENDPOINT_URL", "")
 
@@ -46,6 +47,9 @@ func TestLoadDefaults(t *testing.T) {
 	}
 	if cfg.SessionTTL != 168*time.Hour {
 		t.Fatalf("SessionTTL=%v", cfg.SessionTTL)
+	}
+	if cfg.SessionCookieSecure {
+		t.Fatal("SessionCookieSecure should default false")
 	}
 	if cfg.SeedPassword != "phishguard-dev" {
 		t.Fatalf("SeedPassword=%q", cfg.SeedPassword)
@@ -77,5 +81,43 @@ func TestLoadBadSessionTTL(t *testing.T) {
 	_, err := Load()
 	if err == nil || !strings.Contains(err.Error(), "SESSION_TTL_HOURS") {
 		t.Fatalf("err=%v", err)
+	}
+}
+
+func TestLoadSessionTTLRange(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://localhost/pg")
+	t.Setenv("SQS_QUEUE_URL", "http://localhost/queue")
+	t.Setenv("SESSION_TTL_HOURS", "0")
+	_, err := Load()
+	if err == nil || !strings.Contains(err.Error(), "SESSION_TTL_HOURS") {
+		t.Fatalf("err=%v", err)
+	}
+	t.Setenv("SESSION_TTL_HOURS", "721")
+	_, err = Load()
+	if err == nil || !strings.Contains(err.Error(), "SESSION_TTL_HOURS") {
+		t.Fatalf("err=%v", err)
+	}
+}
+
+func TestLoadPublicAppURL(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://localhost/pg")
+	t.Setenv("SQS_QUEUE_URL", "http://localhost/queue")
+	t.Setenv("PUBLIC_APP_URL", "not-a-url")
+	_, err := Load()
+	if err == nil || !strings.Contains(err.Error(), "PUBLIC_APP_URL") {
+		t.Fatalf("err=%v", err)
+	}
+}
+
+func TestLoadSessionCookieSecure(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://localhost/pg")
+	t.Setenv("SQS_QUEUE_URL", "http://localhost/queue")
+	t.Setenv("SESSION_COOKIE_SECURE", "true")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cfg.SessionCookieSecure {
+		t.Fatal("expected secure cookie")
 	}
 }
