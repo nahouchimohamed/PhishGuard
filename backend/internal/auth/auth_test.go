@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -49,7 +50,7 @@ func TestNewTokenAndNewClickToken(t *testing.T) {
 
 func TestSetSessionCookieAttributes(t *testing.T) {
 	ttl := 2 * time.Hour
-	svc := newService(nil, "phishguard_session", ttl)
+	svc := newService(nil, "phishguard_session", ttl, true)
 	rec := httptest.NewRecorder()
 	svc.SetSessionCookie(rec, "raw-token")
 
@@ -68,6 +69,9 @@ func TestSetSessionCookieAttributes(t *testing.T) {
 	if !c.HttpOnly {
 		t.Fatal("expected HttpOnly")
 	}
+	if !c.Secure {
+		t.Fatal("expected Secure")
+	}
 	if c.SameSite != http.SameSiteLaxMode {
 		t.Fatalf("SameSite=%v want Lax", c.SameSite)
 	}
@@ -80,7 +84,7 @@ func TestSetSessionCookieAttributes(t *testing.T) {
 }
 
 func TestClearSessionCookieAttributes(t *testing.T) {
-	svc := newService(nil, "phishguard_session", time.Hour)
+	svc := newService(nil, "phishguard_session", time.Hour, false)
 	rec := httptest.NewRecorder()
 	svc.ClearSessionCookie(rec)
 
@@ -109,9 +113,13 @@ func TestClearSessionCookieAttributes(t *testing.T) {
 type memUserStore struct {
 	user     store.User
 	sessions map[string]string // tokenHash -> userID
+	getErr   error
 }
 
 func (m *memUserStore) GetUserByEmail(ctx context.Context, email string) (store.User, error) {
+	if m.getErr != nil {
+		return store.User{}, m.getErr
+	}
 	if email != m.user.Email {
 		return store.User{}, store.ErrNotFound
 	}
@@ -154,8 +162,12 @@ func TestLoginLogoutUserFromRequest(t *testing.T) {
 		},
 		sessions: map[string]string{},
 	}
-	svc := newService(st, "sess", time.Hour)
+	svc := newService(st, "sess", time.Hour, false)
 
+	_, _, err = svc.Login(context.Background(), "", "secret")
+	if !errors.Is(err, store.ErrInvalidInput) {
+		t.Fatalf("blank email: %v", err)
+	}
 	_, _, err = svc.Login(context.Background(), "missing@example.com", "secret")
 	if !errors.Is(err, store.ErrUnauthorized) {
 		t.Fatalf("missing user: %v", err)
@@ -195,5 +207,17 @@ func TestLoginLogoutUserFromRequest(t *testing.T) {
 	_, err = svc.UserFromRequest(context.Background(), req)
 	if !errors.Is(err, store.ErrUnauthorized) {
 		t.Fatalf("after logout: %v", err)
+	}
+}
+
+func TestLoginStoreErrorIsNotUnauthorized(t *testing.T) {
+	st := &memUserStore{getErr: fmt.Errorf("db down")}
+	svc := newService(st, "sess", time.Hour, false)
+	_, _, err := svc.Login(context.Background(), "a@example.com", "x")
+	if errors.Is(err, store.ErrUnauthorized) {
+		t.Fatal("store errors must not become unauthorized")
+	}
+	if err == nil {
+		t.Fatal("expected error")
 	}
 }
