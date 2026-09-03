@@ -95,7 +95,7 @@
           "refId": "A"
         }
       ],
-      "title": "HTTP 5xx ratio",
+      "title": "HTTP 5xx error ratio",
       "type": "timeseries"
     },
     {
