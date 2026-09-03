@@ -1,0 +1,16 @@
+import type { PageServerLoad } from './$types';
+import { apiFetch } from '$lib/server/api';
+import { friendlyError } from '$lib/server/errors';
+import { requireRole } from '$lib/server/guard';
+import type { Template } from '$lib/types';
+
+export const load: PageServerLoad = async ({ locals, cookies, params, url }) => {
+	requireRole(locals.user, 'admin', url.pathname);
+	const res = await apiFetch<Template[]>('/api/templates', { cookies });
+	if (!res.ok || !res.data) {
+		return { template: null, error: friendlyError(res.status, res.error) };
+	}
+	const template = res.data.find((t) => t.id === params.id) ?? null;
+	if (!template) return { template: null, error: 'Template not found' };
+	return { template, error: null };
+};
