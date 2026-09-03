@@ -178,3 +178,46 @@ func TestHealthzUnavailable(t *testing.T) {
 		t.Fatalf("body=%v", body)
 	}
 }
+
+func TestPathUUIDRejectsMalformed(t *testing.T) {
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/campaigns/not-a-uuid", nil)
+	req.SetPathValue("id", "not-a-uuid")
+	if _, ok := pathUUID(rec, req, "id"); ok {
+		t.Fatal("expected reject")
+	}
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status=%d", rec.Code)
+	}
+}
+
+func TestRecovererJSON500(t *testing.T) {
+	h := recoverer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		panic("boom")
+	}))
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/", nil))
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status=%d", rec.Code)
+	}
+	var body map[string]string
+	if err := json.NewDecoder(rec.Body).Decode(&body); err != nil {
+		t.Fatal(err)
+	}
+	if body["error"] != "internal error" {
+		t.Fatalf("body=%v", body)
+	}
+}
+
+func TestRequireAuthStoreErrorIs500(t *testing.T) {
+	auth := &fakeAuth{err: errors.New("db down")}
+	s := newServer(auth, &fakeStoreAPI{}, &fakeCampaignAPI{}, &fakeRedis{})
+	h := s.requireAuth(func(w http.ResponseWriter, r *http.Request) {
+		t.Fatal("next should not run")
+	})
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/me", nil))
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status=%d", rec.Code)
+	}
+}
