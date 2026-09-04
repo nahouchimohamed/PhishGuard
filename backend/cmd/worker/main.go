@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"errors"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,8 +13,10 @@ import (
 	"github.com/phishguard/phishguard/internal/cache"
 	"github.com/phishguard/phishguard/internal/campaign"
 	"github.com/phishguard/phishguard/internal/config"
+	"github.com/phishguard/phishguard/internal/httpserve"
 	"github.com/phishguard/phishguard/internal/metrics"
 	"github.com/phishguard/phishguard/internal/queue"
+	"github.com/phishguard/phishguard/internal/retry"
 	"github.com/phishguard/phishguard/internal/store"
 )
 
@@ -62,25 +64,28 @@ func main() {
 		Addr:              cfg.MetricsAddr,
 		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+	ln, err := net.Listen("tcp", cfg.MetricsAddr)
+	if err != nil {
+		slog.Error("metrics listen", "err", err)
+		os.Exit(1)
 	}
 	go func() {
 		slog.Info("worker metrics listening", "addr", cfg.MetricsAddr)
-		if err := metricsServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("metrics listen", "err", err)
+		if err := httpserve.Serve(ctx, metricsServer, ln, 5*time.Second); err != nil {
+			slog.Error("metrics serve", "err", err)
 			stop()
 		}
 	}()
 
 	slog.Info("worker polling queue", "queue_url", cfg.SQSQueueURL)
 	for {
-		select {
-		case <-ctx.Done():
-			shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			_ = metricsServer.Shutdown(shutdownCtx)
-			cancel()
+		if ctx.Err() != nil {
 			slog.Info("worker stopped")
 			return
-		default:
 		}
 
 		msgs, err := q.Receive(ctx, 5, 10)
@@ -89,17 +94,9 @@ func main() {
 				continue
 			}
 			slog.Error("receive", "err", err)
-			time.Sleep(2 * time.Second)
+			_ = retry.Wait(ctx, 2*time.Second)
 			continue
 		}
-		for _, m := range msgs {
-			if err := campSvc.Deliver(ctx, m.Payload.RecipientID, m.Payload.CampaignID); err != nil {
-				slog.Error("deliver", "err", err, "recipient_id", m.Payload.RecipientID)
-				continue
-			}
-			if err := q.Delete(ctx, m.ReceiptHandle); err != nil {
-				slog.Error("delete message", "err", err)
-			}
-		}
+		processBatch(ctx, msgs, campSvc.Deliver, q.Delete)
 	}
 }
