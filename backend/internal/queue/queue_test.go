@@ -33,6 +33,18 @@ func TestParseBodyBadJSON(t *testing.T) {
 	}
 }
 
+func TestDeliverMessageValidate(t *testing.T) {
+	if err := (DeliverMessage{RecipientID: "r1", CampaignID: "c1"}).Validate(); err != nil {
+		t.Fatal(err)
+	}
+	if err := (DeliverMessage{RecipientID: "", CampaignID: "c1"}).Validate(); err == nil {
+		t.Fatal("expected error for empty recipient")
+	}
+	if err := (DeliverMessage{RecipientID: "r1", CampaignID: "  "}).Validate(); err == nil {
+		t.Fatal("expected error for blank campaign")
+	}
+}
+
 func TestDeliverMessageJSONFieldNames(t *testing.T) {
 	raw, err := json.Marshal(DeliverMessage{RecipientID: "r1", CampaignID: "c1"})
 	if err != nil {
