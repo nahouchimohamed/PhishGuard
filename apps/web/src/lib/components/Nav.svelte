@@ -20,9 +20,16 @@
 				<a class="hover:text-accent" href="/campaigns" aria-current={current('/campaigns')}
 					>Campaigns</a
 				>
+				<a class="hover:text-accent" href="/templates" aria-current={current('/templates')}
+					>Templates</a
+				>
+				<a class="hover:text-accent" href="/employees" aria-current={current('/employees')}
+					>Employees</a
+				>
 			{:else}
 				<a class="hover:text-accent" href="/inbox" aria-current={current('/inbox')}>Inbox</a>
 			{/if}
+			<a class="hover:text-accent" href="/account" aria-current={current('/account')}>Account</a>
 			<form method="POST" action="/logout">
 				<button class="btn-secondary" type="submit">Log out</button>
 			</form>
