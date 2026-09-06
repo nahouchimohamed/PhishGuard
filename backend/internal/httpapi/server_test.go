@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/phishguard/phishguard/internal/store"
 )
@@ -20,6 +21,7 @@ func TestMapStoreErr(t *testing.T) {
 		{store.ErrUnauthorized, http.StatusUnauthorized, "unauthorized"},
 		{store.ErrForbidden, http.StatusForbidden, "forbidden"},
 		{store.ErrInvalidInput, http.StatusBadRequest, "invalid input"},
+		{store.ValidationError{Msg: "name length must be between 1 and 120"}, http.StatusBadRequest, "name length must be between 1 and 120"},
 		{store.ErrConflict, http.StatusConflict, "conflict"},
 		{errors.New("boom"), http.StatusInternalServerError, "internal error"},
 	}
@@ -69,5 +71,29 @@ func TestPublicUserJSONKeys(t *testing.T) {
 	}
 	if m["display_name"] != "Ada" || m["role"] != string(store.RoleAdmin) {
 		t.Fatalf("unexpected values %#v", m)
+	}
+}
+
+func TestRedactPath(t *testing.T) {
+	if got := redactPath("/api/sim/abc.secret"); got != "/api/sim/*" {
+		t.Fatalf("got %q", got)
+	}
+	if got := redactPath("/api/inbox"); got != "/api/inbox" {
+		t.Fatalf("got %q", got)
+	}
+}
+
+func TestLoginRateLimit(t *testing.T) {
+	lim := newLoginLimiter(2, time.Minute)
+	lim.now = func() time.Time { return time.Unix(0, 0) }
+	if ok, _ := lim.allow("a@example.com"); !ok {
+		t.Fatal("1")
+	}
+	if ok, _ := lim.allow("a@example.com"); !ok {
+		t.Fatal("2")
+	}
+	ok, wait := lim.allow("a@example.com")
+	if ok || wait <= 0 {
+		t.Fatalf("ok=%v wait=%v", ok, wait)
 	}
 }
