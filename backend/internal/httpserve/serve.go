@@ -9,6 +9,8 @@ import (
 )
 
 // Serve runs srv on ln until ctx is cancelled, then Shutdown with grace.
+// Callers should set ReadHeaderTimeout (and usually Read/Write/Idle timeouts)
+// on srv before Serve; this helper only owns the serve/shutdown lifecycle.
 func Serve(ctx context.Context, srv *http.Server, ln net.Listener, grace time.Duration) error {
 	errCh := make(chan error, 1)
 	go func() {
