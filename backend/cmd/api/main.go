@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"errors"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,6 +15,7 @@ import (
 	"github.com/phishguard/phishguard/internal/campaign"
 	"github.com/phishguard/phishguard/internal/config"
 	"github.com/phishguard/phishguard/internal/httpapi"
+	"github.com/phishguard/phishguard/internal/httpserve"
 	"github.com/phishguard/phishguard/internal/queue"
 	"github.com/phishguard/phishguard/internal/store"
 )
@@ -56,7 +57,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	authSvc := auth.New(st, cfg.SessionCookie, cfg.SessionTTL)
+	authSvc := auth.New(st, cfg.SessionCookie, cfg.SessionTTL, cfg.SessionCookieSecure)
 	campSvc := campaign.New(st, q, dash, cfg.PublicAppURL)
 	srv := httpapi.New(authSvc, st, campSvc, dash)
 
@@ -64,19 +65,20 @@ func main() {
 		Addr:              cfg.HTTPAddr,
 		Handler:           srv.Handler(),
 		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
 	}
 
-	go func() {
-		slog.Info("api listening", "addr", cfg.HTTPAddr)
-		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("listen", "err", err)
-			stop()
-		}
-	}()
-
-	<-ctx.Done()
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	_ = httpServer.Shutdown(shutdownCtx)
+	ln, err := net.Listen("tcp", cfg.HTTPAddr)
+	if err != nil {
+		slog.Error("listen", "err", err)
+		os.Exit(1)
+	}
+	slog.Info("api listening", "addr", cfg.HTTPAddr)
+	if err := httpserve.Serve(ctx, httpServer, ln, 10*time.Second); err != nil {
+		slog.Error("serve", "err", err)
+		os.Exit(1)
+	}
 	slog.Info("api stopped")
 }
