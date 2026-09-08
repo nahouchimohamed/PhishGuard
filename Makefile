@@ -1,9 +1,10 @@
 COMPOSE = docker compose -f deploy/docker-compose.yml --env-file .env.example
+PYTHON ?= python
 
-.PHONY: help up down stop reset logs ps rebuild-backend api-test api-check web-test web-check fmt fmt-check tidy ci-local lambda-zip compose-config
+.PHONY: help up down stop reset logs ps rebuild-backend api-test api-check web-test web-check fmt fmt-check tidy ci-local lambda-zip compose-config check-docs check-static
 
 help:
-	@echo "Targets: up down stop reset logs ps rebuild-backend api-test api-check web-test web-check fmt fmt-check tidy ci-local lambda-zip compose-config"
+	@echo "Targets: up down stop reset logs ps rebuild-backend api-test api-check web-test web-check fmt fmt-check tidy ci-local lambda-zip compose-config check-docs check-static"
 
 up:
 	$(COMPOSE) up --build -d
@@ -55,5 +56,13 @@ lambda-zip:
 
 compose-config:
 	$(COMPOSE) config -q
+
+# Stdlib Python 3.8+ scripts; PYTHON defaults to `python` (works on Windows too).
+check-docs:
+	$(PYTHON) scripts/check_links.py
+	$(PYTHON) scripts/check_env_example.py
+
+check-static: check-docs
+	$(PYTHON) scripts/check_metrics_contract.py
 
 ci-local: api-check web-check
