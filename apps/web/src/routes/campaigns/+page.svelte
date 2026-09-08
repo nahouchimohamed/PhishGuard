@@ -20,10 +20,34 @@
 		<a class="btn" href="/campaigns/new">New campaign</a>
 	</div>
 
+	<div class="mb-4 flex flex-wrap items-center gap-3">
+		<div class="flex flex-wrap gap-2 text-sm" role="navigation" aria-label="Campaign status filter">
+			{#each [['all', 'All'], ['active', 'Active'], ['launching', 'Launching'], ['closed', 'Closed'], ['draft', 'Draft']] as [value, label]}
+				<a
+					class={`rounded-full px-3 py-1 ${data.statusFilter === value ? 'bg-ink text-white' : 'bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50'}`}
+					href={value === 'all' ? `/campaigns${data.q ? `?q=${encodeURIComponent(data.q)}` : ''}` : `/campaigns?status=${value}${data.q ? `&q=${encodeURIComponent(data.q)}` : ''}`}
+					aria-current={data.statusFilter === value ? 'page' : undefined}>{label}</a
+				>
+			{/each}
+		</div>
+		<form class="ml-auto" method="GET" action="/campaigns">
+			{#if data.statusFilter !== 'all'}
+				<input type="hidden" name="status" value={data.statusFilter} />
+			{/if}
+			<input class="input w-56" name="q" value={data.q} placeholder="Search campaigns" />
+		</form>
+	</div>
+
 	{#if data.error}
 		<Alert>{data.error}</Alert>
 	{:else if data.campaigns.length === 0}
-		<div class="card text-slate-600">No campaigns yet. Create one to start a drill.</div>
+		<div class="card text-slate-600">
+			{#if data.statusFilter !== 'all' || data.q}
+				No campaigns match these filters.
+			{:else}
+				No campaigns yet. Create one to start a drill.
+			{/if}
+		</div>
 	{:else}
 		<div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
 			<table class="min-w-full text-left text-sm">
