@@ -95,7 +95,7 @@
           "refId": "A"
         }
       ],
-      "title": "HTTP 5xx ratio",
+      "title": "HTTP 5xx error ratio",
       "type": "timeseries"
     },
     {
@@ -111,7 +111,7 @@
           "refId": "A"
         }
       ],
-      "title": "HTTP latency p95",
+      "title": "HTTP latency p95 by path",
       "type": "timeseries"
     },
     {
