@@ -21,6 +21,15 @@ export const load: PageServerLoad = async ({ locals, cookies, params, url }) => 
 };
 
 export const actions: Actions = {
+	close: async ({ locals, cookies, params, url }) => {
+		requireRole(locals.user, 'admin', url.pathname);
+		const res = await apiFetch(apiPath('/api/campaigns', params.id, 'close'), {
+			method: 'POST',
+			cookies
+		});
+		if (!res.ok) return fail(res.status || 400, { error: friendlyError(res.status, res.error) });
+		throw redirect(303, `/campaigns/${params.id}`);
+	},
 	retry: async ({ locals, cookies, params, url }) => {
 		requireRole(locals.user, 'admin', url.pathname);
 		const res = await apiFetch(apiPath('/api/campaigns', params.id, 'retry'), {
