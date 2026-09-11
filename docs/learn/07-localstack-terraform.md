@@ -8,6 +8,10 @@ Everyday Compose already teaches SQS via ElasticMQ. This chapter adds **Lambda**
 
 Do **not** apply this Terraform to real AWS. The provider endpoints are hard-wired to LocalStack defaults.
 
+## Local ports (Compose)
+
+Compose publishes web/api/worker/prometheus/grafana/elasticmq/postgres/redis on **`127.0.0.1` only**. That keeps the training stack off the LAN while you still open the usual `http://localhost:...` URLs from your machine. LocalStack Lambda reaches Postgres/Redis via `host.docker.internal` (see `infra/terraform` variables).
+
 ## Steps
 
 1. Create a LocalStack account and copy your auth token into `.env` as `LOCALSTACK_AUTH_TOKEN`.
@@ -18,6 +22,12 @@ docker run --rm -it -p 4566:4566 -e LOCALSTACK_AUTH_TOKEN -v /var/run/docker.soc
 ```
 
 3. Build the Lambda binary (Linux):
+
+```bash
+make lambda-zip
+```
+
+Or:
 
 ```bash
 cd backend
@@ -35,10 +45,12 @@ terraform init
 terraform apply
 ```
 
+The module attaches `AWSLambdaSQSQueueExecutionRole`, zips `backend/bin/bootstrap` with mode `0755`, and sets Lambda timeout to **5s**. URLs come from Terraform variables (`database_url`, `redis_url`, `public_app_url`).
+
 5. Stop the Compose **worker** if you point the same queue at LocalStack, otherwise two consumers fight.
 
 ## What you learn
 
-- IAM role + Lambda + SQS event source mapping as code
+- IAM role + managed SQS execution policy + Lambda + SQS event source mapping as code
 - `provided.al2023` custom runtime (the `bootstrap` binary)
-- Why endpoint overrides exist in the AWS provider
+- Why endpoint overrides and `default_tags` exist on the AWS provider

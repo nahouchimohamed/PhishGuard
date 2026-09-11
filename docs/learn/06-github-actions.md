@@ -1,19 +1,23 @@
 # 06 — GitHub Actions CI
 
-## File
+## Files
 
-[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
+- [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
+- [`.github/dependabot.yml`](../../.github/dependabot.yml)
+- [`.github/pull_request_template.md`](../../.github/pull_request_template.md)
 
 ## What runs (and what does not)
 
 | Job | Purpose |
 |-----|---------|
-| `go` | `go vet` + `go test` |
-| `web` | `svelte-check` + Vitest |
+| `go` | `gofmt` check + `go vet` + `go test -race` |
+| `web` | `npm ci` + `svelte-check` + Vitest |
 | `docker` | Build api, worker, web images |
-| `terraform` | `fmt -check` + `validate` |
+| `terraform` | `fmt -check` + `validate` (LocalStack-oriented module) |
 
 There is **no deploy job**. That is intentional: you practice the safety net without paying for cloud hosting.
+
+Dependabot watches GitHub Actions, Go modules, npm, Dockerfiles under `deploy/`, and Terraform weekly.
 
 ## Free minutes
 
