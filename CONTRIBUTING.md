@@ -25,12 +25,9 @@ make ci-local       # both
 make compose-config # validate compose YAML (needs Docker CLI)
 
 # Optional static checks (stdlib Python 3.8+)
-python scripts/check_links.py
-python scripts/check_env_example.py
-python scripts/check_metrics_contract.py
+make check-static
+# or: python scripts/check_links.py && python scripts/check_env_example.py && python scripts/check_metrics_contract.py
 ```
-
-Or: `make check-docs` / `make check-static` when available.
 
 ## Learn path
 
