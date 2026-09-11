@@ -8,9 +8,9 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project   = "phishguard"
+      Project     = "phishguard"
       Environment = "localstack"
-      ManagedBy = "terraform"
+      ManagedBy   = "terraform"
     }
   }
 
