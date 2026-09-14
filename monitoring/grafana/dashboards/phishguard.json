@@ -143,7 +143,7 @@
           "refId": "A"
         }
       ],
-      "title": "Go goroutines",
+      "title": "Go goroutines by job",
       "type": "timeseries"
     }
   ],
