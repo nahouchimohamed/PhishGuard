@@ -5,6 +5,7 @@
 	import StatusBadge from '$lib/components/StatusBadge.svelte';
 	import SubmitButton from '$lib/components/SubmitButton.svelte';
 	import { recipientLabel } from '$lib/labels';
+	import { parseLesson } from '$lib/lesson';
 	import { splitMessageBody } from '$lib/message';
 
 	let { data, form } = $props();
@@ -15,6 +16,7 @@
 		if (!item) return [];
 		return splitMessageBody(item.body_text, item.sim_url ?? '#');
 	});
+	const lesson = $derived(data.item?.reported_at ? parseLesson(data.item.lesson_text) : null);
 </script>
 
 <PageShell title={data.item?.subject ?? 'Message'} user={data.user} width="max-w-3xl">
@@ -67,5 +69,20 @@
 				>
 			{/if}
 		</div>
+
+		{#if lesson}
+			<section class="card mt-6 border-emerald-200 bg-emerald-50/50">
+				<h2 class="mb-2 font-medium">What to watch for</h2>
+				<p class="text-sm text-slate-800">{lesson.intro}</p>
+				{#if lesson.redFlags.length}
+					<ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-700">
+						{#each lesson.redFlags as flag}<li>{flag}</li>{/each}
+					</ul>
+				{/if}
+				{#if lesson.goodHabit}
+					<p class="mt-3 text-sm"><span class="font-medium">Good habit:</span> {lesson.goodHabit}</p>
+				{/if}
+			</section>
+		{/if}
 	{/if}
 </PageShell>
