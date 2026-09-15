@@ -36,3 +36,9 @@ Open:
 - Subjects are prefixed with `[Training]`.
 - The yellow banner never goes away — this is intentional.
 - The simulation page has **no password field**.
+
+## Troubleshooting
+
+- Port clashes on `5432` or `6379`: stop local Postgres/Redis or change the published ports in `deploy/docker-compose.yml`.
+- Schema changes in `backend/migrations/001_init.sql` apply only on a fresh volume. Use `make reset` to wipe and recreate.
+- `make down` keeps volumes; `make reset` removes them.
