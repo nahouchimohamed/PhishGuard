@@ -29,3 +29,7 @@ A duplicate SQS message returns `RowsAffected = 0`. The worker still deletes the
 ## Timestamps, not a single status
 
 `opened_at`, `clicked_at`, and `reported_at` are separate columns. An employee can open, click, **and** report. The UI label prefers Reported — see `RecipientLabel`.
+
+## Stats cache
+
+Campaign totals are expensive to recompute on every admin refresh, so `GetStats` checks Redis first and falls back to SQL on a miss. After a delivery, open, click, or report, the service invalidates that campaign's cache key so the next read rebuilds fresh numbers. When Redis is down, the SQL path still works — the cache is an accelerator, not a source of truth.
