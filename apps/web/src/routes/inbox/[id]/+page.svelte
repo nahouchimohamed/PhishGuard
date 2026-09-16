@@ -21,7 +21,7 @@
 
 <PageShell title={data.item?.subject ?? 'Message'} user={data.user} width="max-w-3xl">
 	{#snippet banner()}
-		SIMULATION — reporting is the goal. The link opens an awareness notice, never a password form.
+		SIMULATION — report first. After you report, the lesson unlocks below. Links never ask for a password.
 	{/snippet}
 
 	{#if !data.item}

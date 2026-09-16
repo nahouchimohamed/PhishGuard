@@ -25,7 +25,7 @@
 		<div class="mt-4"><Alert>{data.error}</Alert></div>
 	{:else if data.items.length === 0}
 		<div class="card mt-6 text-slate-600">
-			No delivered messages yet. Ask an admin to launch a campaign, then refresh.
+			Nothing waiting yet. New drills usually land within a few seconds of launch.
 		</div>
 	{:else}
 		<ul class="mt-6 divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
