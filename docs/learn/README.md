@@ -9,6 +9,7 @@ Follow in order. Each note points at the real files.
 5. [Prometheus + Grafana](05-prometheus-grafana.md)
 6. [GitHub Actions](06-github-actions.md)
 7. [LocalStack + Terraform](07-localstack-terraform.md) (optional)
+8. [Safety rules](08-safety-rules.md)
 
 ## Architecture (everyday Compose)
 
