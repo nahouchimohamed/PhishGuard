@@ -28,12 +28,14 @@
 			Nothing waiting yet. New drills usually land within a few seconds of launch.
 		</div>
 	{:else}
-		<ul class="mt-6 divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+		<ul class="mt-6 divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
 			{#each data.items as item}
 				<li>
 					<a
-						class="flex items-start justify-between gap-4 px-4 py-3 hover:bg-slate-50"
-						class:bg-teal-50={!item.opened_at}
+						class="flex items-start justify-between gap-4 px-4 py-3 transition hover:bg-slate-50"
+						class:bg-teal-50/80={!item.opened_at}
+						class:border-l-4={!item.opened_at}
+						class:border-accent={!item.opened_at}
 						href={`/inbox/${item.recipient_id}`}
 						data-sveltekit-preload-data="off"
 					>
