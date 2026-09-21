@@ -10,6 +10,7 @@ import type { Campaign, LaunchResponse, Template, User } from '$lib/types';
 const noFieldErrors: CampaignFormErrors = {};
 
 export const load: PageServerLoad = async ({ locals, cookies, url }) => {
+	const templatePrefill = url.searchParams.get('template') ?? '';
 	requireRole(locals.user, 'admin', url.pathname);
 
 	const [templates, employees] = await Promise.all([
@@ -18,6 +19,7 @@ export const load: PageServerLoad = async ({ locals, cookies, url }) => {
 	]);
 
 	return {
+		templatePrefill,
 		templates: templates.data ?? [],
 		employees: employees.data ?? [],
 		error:
