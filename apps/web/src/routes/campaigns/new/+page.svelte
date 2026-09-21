@@ -11,7 +11,11 @@
 <PageShell title="New campaign" user={data.user} width="max-w-2xl">
 	{#snippet banner()}Training mode — templates are seeded and stay read-only.{/snippet}
 
-	<h1 class="text-2xl font-semibold">New campaign</h1>
+	<p class="mb-2 text-sm">
+		<a class="text-accent hover:underline" href="/templates">Browse templates</a>
+		· <a class="text-accent hover:underline" href="/employees">Browse employees</a>
+	</p>
+	<h1 class="page-title">New campaign</h1>
 	<p class="mt-1 text-sm text-slate-600">
 		Commit-then-publish: the API saves recipients, then enqueues one SQS message each.
 	</p>
@@ -70,7 +74,7 @@
 				>
 					<option value="">Select a template</option>
 					{#each data.templates as t}
-						<option value={t.id} selected={form?.values?.template_id === t.id}
+						<option value={t.id} selected={t.id === data.templatePrefill} selected={form?.values?.template_id === t.id}
 							>{t.name} — {t.subject}</option
 						>
 					{/each}
