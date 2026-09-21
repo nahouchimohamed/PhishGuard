@@ -8,7 +8,7 @@
 </script>
 
 <PageShell title="Simulation result" user={data.user} width="max-w-2xl">
-	{#snippet banner()}This is a simulation result. There is no login form here on purpose.{/snippet}
+	{#snippet banner()}Simulated message. This page never asks for a password.{/snippet}
 
 	{#if !data.lesson || !parsed}
 		<Alert>{data.error}</Alert>
