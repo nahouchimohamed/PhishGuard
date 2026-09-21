@@ -8,7 +8,7 @@
 </script>
 
 <PageShell title="Campaigns" user={data.user} width="max-w-5xl">
-	{#snippet banner()}Training mode — campaigns deliver into the in-app inbox only.{/snippet}
+	{#snippet banner()}Training mode — campaigns deliver into the in-app inbox only (no SMTP).{/snippet}
 
 	<div class="mb-6 flex items-center justify-between">
 		<div>
