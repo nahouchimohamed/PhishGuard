@@ -24,3 +24,7 @@ The worker exposes `GET /healthz` and `/metrics` on `:8081` (Compose healthcheck
 ## Lambda vs worker
 
 [`backend/cmd/lambda`](../../backend/cmd/lambda) wraps the **same** `Deliver` function. Do not attach both consumers to one queue in Compose — they would race and split traffic, which hides the lesson. Use Lambda only in the LocalStack chapter.
+
+## Poison messages
+
+A payload missing `recipient_id` or `campaign_id` can never succeed. The worker deletes those messages immediately so they do not burn DLQ retries. Real deliver failures (for example a brief Postgres blip) leave the message on the queue; visibility timeout brings it back, and only repeated failures land in the DLQ.
