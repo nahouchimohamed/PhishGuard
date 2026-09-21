@@ -94,3 +94,7 @@ make check-static     # check-docs + metrics contract
 ## Safety
 
 PhishGuard is a **training simulator**. It must not be used to phish real people. Simulation links open a lesson page with no credential fields.
+
+## License
+
+Released under the [MIT License](LICENSE).
