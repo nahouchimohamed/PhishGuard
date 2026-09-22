@@ -2,6 +2,7 @@
 	import Alert from '$lib/components/Alert.svelte';
 	import CampaignStatusPill from '$lib/components/CampaignStatusPill.svelte';
 	import PageShell from '$lib/components/PageShell.svelte';
+	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import { formatDateTime } from '$lib/format';
 	import { clickTone, reportTone, toneClass } from '$lib/rateTone';
 	import { clickRate, openRate, reportRate } from '$lib/stats';
@@ -73,7 +74,10 @@
 							</td>
 							<td class="px-4 py-3"><CampaignStatusPill status={c.status} /></td>
 							<td class="px-4 py-3">{formatDateTime(c.created_at)}</td>
-							<td class="px-4 py-3">{c.stats?.delivered ?? 0}/{c.stats?.total ?? 0}</td>
+							<td class="px-4 py-3">
+								<div class="mb-1 text-xs text-slate-500">{c.stats?.delivered ?? 0}/{c.stats?.total ?? 0}</div>
+								<ProgressBar value={c.stats?.delivered ?? 0} max={c.stats?.total ?? 0} />
+							</td>
 							<td class="px-4 py-3">{c.stats ? openRate(c.stats) : 0}%</td>
 							<td class={`px-4 py-3 font-medium ${c.stats ? toneClass(reportTone(reportRate(c.stats))) : ''}`}
 								>{c.stats ? reportRate(c.stats) : 0}%</td
