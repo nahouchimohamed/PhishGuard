@@ -11,7 +11,7 @@
 <PageShell title="Sign in" width="max-w-md">
 	{#snippet banner()}PhishGuard is a simulation platform — no real email is ever sent.{/snippet}
 
-	<div class="card">
+	<div class="card shadow-md ring-1 ring-slate-200/60">
 		<h1 class="page-title">Sign in</h1>
 		<p class="mt-1 text-sm text-slate-600">
 			Seeded users share password <code class="rounded bg-slate-100 px-1">phishguard-dev</code>
@@ -54,7 +54,7 @@
 					value="phishguard-dev"
 				/>
 			</label>
-			<SubmitButton class="btn w-full" label="Continue" pendingLabel="Signing in…" {pending} />
+			<SubmitButton class="btn w-full" label="Sign in" pendingLabel="Signing in…" {pending} />
 		</form>
 
 		<ul class="mt-6 space-y-1 text-xs text-slate-500">
