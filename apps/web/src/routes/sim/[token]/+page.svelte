@@ -13,10 +13,10 @@
 	{#if !data.lesson || !parsed}
 		<Alert>{data.error}</Alert>
 	{:else}
-		<article class="card border-amber-200">
-			<p class="text-xs uppercase tracking-wide text-amber-800">Awareness notice</p>
-			<h1 class="mt-1 text-2xl font-semibold">{data.lesson.subject}</h1>
-			<p class="mt-1 text-sm text-slate-600">Campaign: {data.lesson.name}</p>
+		<article class="card border-accent/30 bg-teal-50/30 shadow-sm">
+			<p class="text-xs font-medium uppercase tracking-wide text-accent">Training simulation</p>
+			<h1 class="page-title mt-2">{data.lesson.subject}</h1>
+			<p class="page-subtitle mt-1">Campaign: {data.lesson.name}</p>
 
 			{#if parsed.intro}
 				<p class="mt-4 text-sm leading-6 text-slate-800">{parsed.intro}</p>
