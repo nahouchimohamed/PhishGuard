@@ -9,7 +9,7 @@
 </script>
 
 <PageShell title="Sign in" width="max-w-md">
-	{#snippet banner()}PhishGuard is a simulation platform. No real email is sent.{/snippet}
+	{#snippet banner()}PhishGuard is a simulation platform — no real email is ever sent.{/snippet}
 
 	<div class="card">
 		<h1 class="text-2xl font-semibold">Sign in</h1>
