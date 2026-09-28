@@ -10,6 +10,7 @@ Follow in order. Each note points at the real files.
 6. [GitHub Actions](06-github-actions.md)
 7. [LocalStack + Terraform](07-localstack-terraform.md) (optional)
 8. [Safety rules](08-safety-rules.md)
+9. [Observability habits](09-observability.md)
 
 ## Architecture (everyday Compose)
 
