@@ -31,4 +31,40 @@ describe('validateCampaignForm', () => {
 			expect(res.errors.recipient_user_ids).toBeTruthy();
 		}
 	});
+
+	it('rejects a non-uuid template id', () => {
+		const res = validateCampaignForm({
+			name: 'Drill',
+			template_id: 'not-a-uuid',
+			recipient_user_ids: [uid]
+		});
+		expect(res.ok).toBe(false);
+		if (!res.ok) {
+			expect(res.errors.template_id).toMatch(/invalid/i);
+		}
+	});
+
+	it('rejects invalid recipient ids', () => {
+		const res = validateCampaignForm({
+			name: 'Drill',
+			template_id: tid,
+			recipient_user_ids: ['bad-id']
+		});
+		expect(res.ok).toBe(false);
+		if (!res.ok) {
+			expect(res.errors.recipient_user_ids).toMatch(/invalid/i);
+		}
+	});
+
+	it('rejects a blank name after trim', () => {
+		const res = validateCampaignForm({
+			name: '   ',
+			template_id: tid,
+			recipient_user_ids: [uid]
+		});
+		expect(res.ok).toBe(false);
+		if (!res.ok) {
+			expect(res.errors.name).toMatch(/required/i);
+		}
+	});
 });
