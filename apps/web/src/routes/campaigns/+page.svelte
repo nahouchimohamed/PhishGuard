@@ -31,11 +31,17 @@
 				>
 			{/each}
 		</div>
-		<form class="ml-auto" method="GET" action="/campaigns">
+		<form class="ml-auto flex flex-wrap items-center gap-2" method="GET" action="/campaigns">
 			{#if data.statusFilter !== 'all'}
 				<input type="hidden" name="status" value={data.statusFilter} />
 			{/if}
+			<select class="input w-40" name="sort" value={data.sort}>
+				<option value="newest">Newest</option>
+				<option value="report">Best report %</option>
+				<option value="name">Name</option>
+			</select>
 			<input class="input w-56" name="q" value={data.q} placeholder="Search campaigns" />
+			<button class="btn-secondary px-3" type="submit">Apply</button>
 		</form>
 	</div>
 
