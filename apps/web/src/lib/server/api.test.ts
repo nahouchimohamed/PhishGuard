@@ -64,4 +64,14 @@ describe('apiFetch', () => {
 		expect(res.status).toBe(401);
 		expect(res.error).toBe('unauthorized');
 	});
+
+	it('handles empty success bodies', async () => {
+		vi.stubGlobal(
+			'fetch',
+			vi.fn(async () => new Response('', { status: 204 }))
+		);
+		const res = await apiFetch('/api/x', { method: 'DELETE' });
+		expect(res.ok).toBe(true);
+		expect(res.status).toBe(204);
+	});
 });
