@@ -29,4 +29,10 @@ describe('recipientLabel', () => {
 		expect(recipientLabel({})).toBe('Pending');
 		expect(recipientLabel({ delivered_at: null, opened_at: '' })).toBe('Pending');
 	});
+
+	it('treats empty strings as absent timestamps', () => {
+		expect(recipientLabel({ delivered_at: '1', opened_at: '', clicked_at: '', reported_at: '' })).toBe(
+			'Delivered'
+		);
+	});
 });
