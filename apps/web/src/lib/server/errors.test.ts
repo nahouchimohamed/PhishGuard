@@ -13,4 +13,9 @@ describe('friendlyError', () => {
 		expect(friendlyError(400, 'custom')).toBe('custom');
 		expect(friendlyError(500)).toBe('Something went wrong. Try again shortly.');
 	});
+
+	it('maps forbidden and conflict API messages', () => {
+		expect(friendlyError(403, 'forbidden')).toBe('You do not have access to that.');
+		expect(friendlyError(409, 'conflict')).toBe('That action conflicts with the current state.');
+	});
 });
