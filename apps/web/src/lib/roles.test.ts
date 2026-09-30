@@ -9,4 +9,8 @@ describe('homePathFor', () => {
 	it('sends employees to inbox', () => {
 		expect(homePathFor('employee')).toBe('/inbox');
 	});
+
+	it('keeps admin and employee homes distinct', () => {
+		expect(homePathFor('admin')).not.toBe(homePathFor('employee'));
+	});
 });
