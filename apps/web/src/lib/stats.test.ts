@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clickRate, openRate, percent, reportRate } from './stats';
+import { aggregateStats, clickRate, openRate, percent, reportRate } from './stats';
 
 describe('percent', () => {
 	it('returns 0 for empty or invalid denominators', () => {
@@ -36,5 +36,16 @@ describe('rates', () => {
 
 	it('computes open rate from delivered messages', () => {
 		expect(openRate({ opened: 1, delivered: 4 })).toBe(25);
+	});
+});
+
+describe('aggregateStats', () => {
+	it('sums campaign counters', () => {
+		expect(
+			aggregateStats([
+				{ total: 2, delivered: 2, opened: 1, clicked: 0, reported: 1 },
+				{ total: 3, delivered: 1, opened: 0, clicked: 1, reported: 0 }
+			])
+		).toEqual({ total: 5, delivered: 3, opened: 1, clicked: 1, reported: 1 });
 	});
 });
