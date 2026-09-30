@@ -33,4 +33,9 @@ describe('parseLaunchResponse', () => {
 	it('rejects null bodies', () => {
 		expect(parseLaunchResponse(201, null).ok).toBe(false);
 	});
+
+	it('rejects unrecognized response shapes', () => {
+		expect(parseLaunchResponse(201, { error: 'bad' } as unknown as Campaign).ok).toBe(false);
+		expect(parseLaunchResponse(202, { warning: 'partial' } as unknown as Campaign).ok).toBe(false);
+	});
 });
