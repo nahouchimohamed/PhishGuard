@@ -55,3 +55,29 @@ func TestServeLoopbackGracefulShutdown(t *testing.T) {
 		t.Fatal("Serve did not return after cancel")
 	}
 }
+
+func TestServeReturnsNilWhenAlreadyClosed(t *testing.T) {
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	srv := &http.Server{
+		Handler:           http.NewServeMux(),
+		ReadHeaderTimeout: time.Second,
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan error, 1)
+	go func() {
+		done <- Serve(ctx, srv, ln, 200*time.Millisecond)
+	}()
+	// Cancel before any request; shutdown should still succeed cleanly.
+	cancel()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("Serve did not return after cancel")
+	}
+}
