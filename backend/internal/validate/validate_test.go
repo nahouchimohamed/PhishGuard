@@ -1,4 +1,4 @@
-﻿package validate
+package validate
 
 import "testing"
 
@@ -37,6 +37,10 @@ func TestEmail(t *testing.T) {
 		{"", true},
 		{"not-an-email", true},
 		{"@example.com", true},
+		{"user+tag@example.com", false},
+		{"no-at-sign.example.com", true},
+		{"a b@example.com", true},
+		{"admin@phishguard.local", false},
 	}
 	for _, tt := range tests {
 		err := Email(tt.in)
