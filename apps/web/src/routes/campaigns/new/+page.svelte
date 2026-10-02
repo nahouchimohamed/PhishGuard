@@ -9,7 +9,7 @@
 </script>
 
 <PageShell title="New campaign" user={data.user} width="max-w-2xl">
-	{#snippet banner()}Training mode — templates are seeded and read-only.{/snippet}
+	{#snippet banner()}Training mode — templates are seeded and stay read-only.{/snippet}
 
 	<h1 class="text-2xl font-semibold">New campaign</h1>
 	<p class="mt-1 text-sm text-slate-600">
