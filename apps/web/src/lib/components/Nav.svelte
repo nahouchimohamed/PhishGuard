@@ -17,6 +17,9 @@
 		<nav class="flex flex-wrap items-center gap-4 text-sm" aria-label="Primary">
 			<span class="text-slate-600">{user.display_name} · {user.role}</span>
 			{#if user.role === 'admin'}
+				<a class="hover:text-accent" href="/overview" aria-current={current('/overview')}
+					>Overview</a
+				>
 				<a class="hover:text-accent" href="/campaigns" aria-current={current('/campaigns')}
 					>Campaigns</a
 				>

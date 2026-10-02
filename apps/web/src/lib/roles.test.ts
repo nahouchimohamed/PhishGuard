@@ -3,7 +3,7 @@ import { homePathFor } from './roles';
 
 describe('homePathFor', () => {
 	it('sends admins to campaigns', () => {
-		expect(homePathFor('admin')).toBe('/campaigns');
+		expect(homePathFor('admin')).toBe('/overview');
 	});
 
 	it('sends employees to inbox', () => {
