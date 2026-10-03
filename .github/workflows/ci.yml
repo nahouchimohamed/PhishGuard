@@ -76,3 +76,18 @@ jobs:
       - run: terraform fmt -check
       - run: terraform init -backend=false
       - run: terraform validate
+
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Link and env contracts
+        run: |
+          python scripts/check_links.py
+          python scripts/check_env_example.py
+      - name: Metrics contract
+        run: python scripts/check_metrics_contract.py
