@@ -55,6 +55,7 @@ apps/web/         SvelteKit UI (BFF to the API)
 deploy/           Compose + Dockerfiles + ElasticMQ config
 infra/terraform/  LocalStack-oriented Lambda/SQS
 monitoring/       Prometheus + Grafana
+scripts/          Stdlib Python contract checks
 ```
 
 ## Make targets
