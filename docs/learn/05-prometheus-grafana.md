@@ -22,3 +22,7 @@ Open http://localhost:3002 → folder **PhishGuard** → dashboard **PhishGuard*
 ## Habit
 
 When you add a feature, ask: “Which counter proves it happened?” Add the counter next to the business logic, not only in a dashboard later. Keep dashboard queries aligned with names in `metrics.go` (see `scripts/check_metrics_contract.py`).
+
+## Alert rules
+
+`monitoring/prometheus/rules/phishguard.rules.yml` evaluates alongside scrapes. Treat rules as classroom signals (for example sustained 5xx) rather than production paging — the point is to see a rule fire locally after you break something on purpose.
