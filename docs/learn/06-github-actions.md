@@ -11,9 +11,10 @@
 | Job | Purpose |
 |-----|---------|
 | `go` | `gofmt` check + `go vet` + `go test -race` |
-| `web` | `npm ci` + `svelte-check` + Vitest |
+| `web` | `npm ci` + `svelte-check` + Vitest + build |
 | `docker` | Build api, worker, web images |
 | `terraform` | `fmt -check` + `validate` (LocalStack-oriented module) |
+| `contracts` | Python link, env, and metrics contract scripts |
 
 There is **no deploy job**. That is intentional: you practice the safety net without paying for cloud hosting.
 
