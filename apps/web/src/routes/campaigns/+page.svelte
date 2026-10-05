@@ -48,7 +48,7 @@
 	{#if data.error}
 		<Alert>{data.error}</Alert>
 	{:else if data.campaigns.length === 0}
-		<div class="card text-slate-600">
+		<div class="card-muted">
 			{#if data.statusFilter !== 'all' || data.q}
 				No campaigns match these filters.
 			{:else}

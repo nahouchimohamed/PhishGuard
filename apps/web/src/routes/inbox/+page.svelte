@@ -24,7 +24,7 @@
 	{#if data.error}
 		<div class="mt-4"><Alert>{data.error}</Alert></div>
 	{:else if data.items.length === 0}
-		<div class="card mt-6 text-slate-600">
+		<div class="card-muted mt-6">
 			Nothing waiting yet. New drills usually land within a few seconds of launch.
 		</div>
 	{:else}
