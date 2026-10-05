@@ -9,3 +9,7 @@ PhishGuard is a **local training simulator**. Keep these invariants:
 5. The yellow training banner stays visible on app pages.
 
 The web safety test (`apps/web/src/safety.test.ts`) fails CI-style local runs if a password field appears outside login or if `{@html}` sneaks into templates.
+
+## Reporting a concern
+
+If you think a change weakens these rules, open a bug with the training-safety checkbox unchecked and point at the file. Prefer fixing the invariant in the same PR that introduced the risk.
