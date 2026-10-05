@@ -28,3 +28,7 @@ Go sets `Set-Cookie`, but a server-to-server `fetch` does not automatically beco
 ## Preload caveat
 
 SvelteKit hover preload can hit `/inbox/[id]` and `/sim/[token]`, which record opens and clicks in the API. Those links set `data-sveltekit-preload-data="off"`.
+
+## Form validation
+
+Campaign create validates on the BFF with `validateCampaignForm` before calling the API. That keeps UUID and name errors next to the fields without waiting for a round trip, while the Go API still enforces the same rules as a safety net.
