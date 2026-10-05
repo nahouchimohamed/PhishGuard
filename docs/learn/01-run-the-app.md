@@ -42,3 +42,7 @@ Open:
 - Port clashes on `5432` or `6379`: stop local Postgres/Redis or change the published ports in `deploy/docker-compose.yml`.
 - Schema changes in `backend/migrations/001_init.sql` apply only on a fresh volume. Use `make reset` to wipe and recreate.
 - `make down` keeps volumes; `make reset` removes them.
+
+## Health checks
+
+Compose marks API and worker healthy when `GET /healthz` succeeds. If the web UI loads but login fails, hit http://localhost:8080/healthz first — a failing healthcheck usually means Postgres or Redis is still starting.
