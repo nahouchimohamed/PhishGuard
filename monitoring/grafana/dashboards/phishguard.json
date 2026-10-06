@@ -13,7 +13,7 @@
       "id": 1,
       "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "targets": [{ "expr": "sum(phishguard_campaign_launches_total)", "legendFormat": "launches", "refId": "A" }],
-      "title": "Campaign launches",
+      "title": "Campaign launches (API total)",
       "type": "stat"
     },
     {
