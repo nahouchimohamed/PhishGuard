@@ -17,6 +17,14 @@
 	let { data, form } = $props();
 	const d = $derived(data.detail);
 	const tallies = $derived(d ? countByLabel(d.recipients) : null);
+	let outcomeFilter = $state<'All' | 'Reported' | 'Clicked' | 'Opened' | 'Delivered' | 'Pending'>('All');
+	const visibleRecipients = $derived(
+		!d
+			? []
+			: outcomeFilter === 'All'
+				? d.recipients
+				: d.recipients.filter((r) => recipientLabel(r) === outcomeFilter)
+	);
 	let pending = $state(false);
 </script>
 
@@ -110,14 +118,30 @@
 
 		<div class="card overflow-x-auto">
 			<h2 class="mb-2 font-medium">Recipients</h2>
-			{#if tallies}
-				<p class="mb-3 text-xs text-slate-500">
-					Reported {tallies.Reported} · Clicked {tallies.Clicked} · Opened {tallies.Opened} · Delivered
-					{tallies.Delivered} · Pending {tallies.Pending}
+			<div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+				{#if tallies}
+					<p class="text-xs text-slate-500">
+						Reported {tallies.Reported} · Clicked {tallies.Clicked} · Opened {tallies.Opened} · Delivered
+						{tallies.Delivered} · Pending {tallies.Pending}
+					</p>
+				{/if}
+				<label class="text-xs text-slate-600">
+					Outcome
+					<select class="input ml-2 w-36" bind:value={outcomeFilter}>
+						{#each ['All', 'Reported', 'Clicked', 'Opened', 'Delivered', 'Pending'] as opt}
+							<option value={opt}>{opt}</option>
+						{/each}
+					</select>
+				</label>
+			</div>
+			{#if visibleRecipients.length === 0}
+				<p class="text-sm text-slate-600">
+					{#if outcomeFilter === 'All'}
+						No recipients on this campaign.
+					{:else}
+						No recipients with status {outcomeFilter}.
+					{/if}
 				</p>
-			{/if}
-			{#if d.recipients.length === 0}
-				<p class="text-sm text-slate-600">No recipients on this campaign.</p>
 			{:else}
 				<table class="min-w-full text-left text-sm">
 					<thead class="text-slate-500">
@@ -129,7 +153,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each d.recipients as r}
+						{#each visibleRecipients as r}
 							<tr class="border-t border-slate-100">
 								<td class="py-2 pr-4">{r.display_name}</td>
 								<td class="py-2 pr-4">{r.email}</td>
