@@ -71,7 +71,9 @@
 							};
 						}}
 					>
-						<SubmitButton label="Close campaign" pendingLabel="Closing…" {pending} />
+						<button class="btn-danger" type="submit" disabled={pending}
+							>{pending ? 'Closing…' : 'Close campaign'}</button
+						>
 					</form>
 				{/if}
 				{#if d.campaign.status === 'launching'}
