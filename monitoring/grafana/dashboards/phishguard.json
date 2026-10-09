@@ -53,7 +53,7 @@
       "id": 6,
       "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "targets": [{ "expr": "sum(rate(phishguard_reports_total[5m]))", "legendFormat": "report/s", "refId": "A" }],
-      "title": "Report rate",
+      "title": "Report rate (5m)",
       "type": "stat"
     },
     {
