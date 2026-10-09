@@ -63,7 +63,7 @@
       "id": 7,
       "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "targets": [{ "expr": "sum(rate(phishguard_clicks_total[5m]))", "legendFormat": "click/s", "refId": "A" }],
-      "title": "Click rate",
+      "title": "Click rate (5m)",
       "type": "stat"
     },
     {
