@@ -127,7 +127,7 @@
           "refId": "A"
         }
       ],
-      "title": "Scrape up",
+      "title": "Prometheus scrape up",
       "type": "timeseries"
     },
     {
