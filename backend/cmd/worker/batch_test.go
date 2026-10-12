@@ -70,3 +70,36 @@ func TestProcessBatchHonoursCancel(t *testing.T) {
 		t.Fatal("should not deliver after cancel")
 	}
 }
+
+func TestProcessBatchEmpty(t *testing.T) {
+	called := false
+	processBatch(context.Background(), nil,
+		func(ctx context.Context, recipientID, campaignID string) error {
+			called = true
+			return nil
+		},
+		func(ctx context.Context, receiptHandle string) error {
+			called = true
+			return nil
+		},
+	)
+	if called {
+		t.Fatal("empty batch should be a no-op")
+	}
+}
+
+func TestProcessBatchPoisonsMissingCampaign(t *testing.T) {
+	var deleted []string
+	processBatch(context.Background(), []queue.Received{
+		{Payload: queue.DeliverMessage{RecipientID: "r1", CampaignID: ""}, ReceiptHandle: "hx"},
+	}, func(ctx context.Context, recipientID, campaignID string) error {
+		t.Fatal("should not deliver poison message")
+		return nil
+	}, func(ctx context.Context, receiptHandle string) error {
+		deleted = append(deleted, receiptHandle)
+		return nil
+	})
+	if len(deleted) != 1 || deleted[0] != "hx" {
+		t.Fatalf("deleted=%v", deleted)
+	}
+}
