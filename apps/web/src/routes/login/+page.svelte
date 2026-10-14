@@ -9,12 +9,13 @@
 </script>
 
 <PageShell title="Sign in" width="max-w-md">
-	{#snippet banner()}PhishGuard is a simulation platform — no real email is ever sent.{/snippet}
+	{#snippet banner()}Training only — credentials never leave this workstation.{/snippet}
 
 	<div class="card shadow-md ring-1 ring-slate-200/60">
 		<h1 class="page-title">Sign in</h1>
-		<p class="mt-1 text-sm text-slate-600">
-			Seeded users share password <code class="rounded bg-slate-100 px-1">phishguard-dev</code>
+		<p class="page-subtitle mt-2">
+			Local seed password:
+			<code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">phishguard-dev</code>
 		</p>
 
 		{#if form?.error}
