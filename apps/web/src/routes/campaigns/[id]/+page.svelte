@@ -64,6 +64,9 @@
 						method="POST"
 						action="?/close"
 						use:enhance={() => {
+							if (!confirm('Close this campaign? Recipients keep their history.')) {
+								return async () => {};
+							}
 							pending = true;
 							return async ({ update }) => {
 								await update();
