@@ -8,7 +8,7 @@
 </script>
 
 <PageShell title="Training lesson" user={data.user} width="max-w-2xl">
-	{#snippet banner()}This is a training lesson. There is no login form here on purpose.{/snippet}
+	{#snippet banner()}This is a training lesson — there is no login or password form here on purpose.{/snippet}
 
 	{#if !data.lesson || !parsed}
 		<Alert>{data.error}</Alert>
