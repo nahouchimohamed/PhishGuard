@@ -79,7 +79,7 @@
           "refId": "A"
         }
       ],
-      "title": "HTTP request rate",
+      "title": "HTTP request rate by path",
       "type": "timeseries"
     },
     {
