@@ -6,3 +6,4 @@
 - Rebuild the SvelteKit UI with shared shell components and friendlier errors.
 - Bind local compose ports to localhost and expand Grafana/Prometheus coverage.
 - Add contract check scripts, Dependabot, and contribution docs.
+- Expand operator docs, issue templates, and CI contracts coverage.
