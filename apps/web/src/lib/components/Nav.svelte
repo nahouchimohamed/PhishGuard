@@ -13,7 +13,12 @@
 
 <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur">
 	<div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-		<a href="/" class="text-lg font-semibold tracking-tight text-accent">PhishGuard</a>
+		<div class="flex items-center gap-2">
+			<a href="/" class="text-lg font-semibold tracking-tight text-accent">PhishGuard</a>
+			<span class="hidden rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900 sm:inline"
+				>Training</span
+			>
+		</div>
 		<nav class="flex flex-wrap items-center gap-4 text-sm" aria-label="Primary">
 			<span class="text-slate-600">{user.display_name} · {user.role}</span>
 			{#if user.role === 'admin'}
