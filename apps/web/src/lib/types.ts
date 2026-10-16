@@ -1,3 +1,4 @@
+/** Shared API shapes used by the SvelteKit BFF and UI. */
 export type Role = 'admin' | 'employee';
 
 export type User = {
