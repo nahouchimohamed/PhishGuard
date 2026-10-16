@@ -40,7 +40,12 @@
 						data-sveltekit-preload-data="off"
 					>
 						<div>
-							<div class="font-medium" class:font-semibold={!item.opened_at}>{item.subject}</div>
+							<div class="flex items-center gap-2">
+								{#if !item.opened_at}
+									<span class="h-2 w-2 rounded-full bg-accent" aria-hidden="true"></span>
+								{/if}
+								<span class="font-medium" class:font-semibold={!item.opened_at}>{item.subject}</span>
+							</div>
 							<div class="text-xs text-slate-500">
 								{item.from_label}
 								{#if item.delivered_at}
