@@ -1,3 +1,4 @@
+/** Round a part/whole ratio to one decimal percent; invalid inputs yield 0. */
 export function percent(part: number, whole: number): number {
 	if (!Number.isFinite(part) || !Number.isFinite(whole) || whole <= 0) return 0;
 	return Math.round((part / whole) * 1000) / 10;
