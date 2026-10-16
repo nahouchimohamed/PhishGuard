@@ -64,9 +64,9 @@
 					<SubmitButton label="Report as suspicious" pendingLabel="Reporting…" {pending} />
 				</form>
 			{:else}
-				<span class="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
-					>Reported — nice work</span
-				>
+				<div class="w-full sm:w-auto">
+					<Alert tone="success">Reported — nice work. Review the lesson below.</Alert>
+				</div>
 			{/if}
 		</div>
 
