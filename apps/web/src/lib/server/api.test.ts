@@ -68,10 +68,12 @@ describe('apiFetch', () => {
 	it('handles empty success bodies', async () => {
 		vi.stubGlobal(
 			'fetch',
-			vi.fn(async () => new Response('', { status: 204 }))
+			vi.fn(async () => new Response(null, { status: 204 }))
 		);
 		const res = await apiFetch('/api/x', { method: 'DELETE' });
-		expect(res.ok).toBe(true);
 		expect(res.status).toBe(204);
+		expect(res.ok).toBe(true);
+		expect(res.data).toBeNull();
+		expect(res.error).toBeUndefined();
 	});
 });
