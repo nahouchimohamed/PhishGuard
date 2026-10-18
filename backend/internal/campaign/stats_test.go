@@ -68,3 +68,14 @@ func TestGetStatsCacheErrorFallsThrough(t *testing.T) {
 		t.Fatalf("got %#v want %#v", got, want)
 	}
 }
+
+func TestGetStatsMissingCampaign(t *testing.T) {
+	st := newFakeStore()
+	cache := newFakeCache()
+	svc := newService(st, &fakePublisher{}, cache, "http://localhost")
+
+	_, err := svc.GetStats(context.Background(), "missing")
+	if !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("err=%v want ErrNotFound", err)
+	}
+}
