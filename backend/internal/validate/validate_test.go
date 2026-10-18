@@ -62,6 +62,8 @@ func TestName(t *testing.T) {
 		{"   ", 1, 120, true},
 		{stringsRepeat("x", 121), 1, 120, true},
 		{stringsRepeat("x", 120), 1, 120, false},
+		{"Drill", 2, 5, false},
+		{"X", 2, 5, true},
 	}
 	for _, tt := range tests {
 		err := Name(tt.in, tt.min, tt.max)
