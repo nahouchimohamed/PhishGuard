@@ -39,7 +39,7 @@
 				</thead>
 				<tbody>
 					{#each filtered as e}
-						<tr class="border-t border-slate-100 hover:bg-slate-50">
+						<tr class="border-t border-slate-100 odd:bg-white even:bg-slate-50/70 hover:bg-teal-50/40">
 							<td class="px-4 py-3 font-medium">{e.display_name}</td>
 							<td class="px-4 py-3 text-slate-600">{e.email}</td>
 						</tr>
