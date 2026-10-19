@@ -1,5 +1,6 @@
 import type { Handle } from '@sveltejs/kit';
 
+/** Baseline browser hardening headers for the local training UI. */
 export const securityHeaders: Handle = async ({ event, resolve }) => {
 	const response = await resolve(event);
 	response.headers.set('X-Content-Type-Options', 'nosniff');
