@@ -8,6 +8,7 @@
 
 - [ ] `make api-check` (or CI `go` job)
 - [ ] `make web-check` (or CI `web` job)
+- [ ] `make check-static` (or CI `contracts` job) when docs/env/metrics change
 - [ ] Compose / Docker builds still make sense for touched images
 - [ ] Docs updated if behavior or ports changed
 
