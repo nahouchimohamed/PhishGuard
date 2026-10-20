@@ -21,7 +21,7 @@
 	<div class="mb-6 flex flex-wrap items-end justify-between gap-4">
 		<div>
 			<h1 class="page-title">Templates</h1>
-			<p class="page-subtitle">Subjects stay tagged [Training].</p>
+			<p class="page-subtitle">Subjects stay tagged [Training] · {filtered.length} shown</p>
 		</div>
 		<label class="block text-sm">
 			<span class="mb-1 block font-medium text-slate-600">Search</span>
