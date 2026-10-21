@@ -11,6 +11,9 @@
 		</div>
 	{/if}
 	<div class="h-2 overflow-hidden rounded-full bg-slate-100">
-		<div class="h-full rounded-full bg-accent transition-all" style={`width: ${pct}%`}></div>
+		<div
+			class="h-full rounded-full bg-accent transition-all duration-300 ease-out"
+			style={`width: ${pct}%`}
+		></div>
 	</div>
 </div>
