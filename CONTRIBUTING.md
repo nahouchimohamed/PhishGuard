@@ -31,7 +31,7 @@ make check-static
 
 ## Learn path
 
-Short lessons live under [`docs/learn/`](docs/learn/). Update them when you change ports, metrics, CI jobs, or Terraform/LocalStack steps.
+Short lessons live under [`docs/learn/`](docs/learn/). Update them when you change ports, metrics, CI jobs, or Terraform/LocalStack steps. Keep safety rules (`08`) and observability habits (`09`) accurate when those areas move.
 
 ## Pull requests
 
