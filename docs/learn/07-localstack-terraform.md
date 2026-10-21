@@ -54,3 +54,7 @@ The module attaches `AWSLambdaSQSQueueExecutionRole`, zips `backend/bin/bootstra
 - IAM role + managed SQS execution policy + Lambda + SQS event source mapping as code
 - `provided.al2023` custom runtime (the `bootstrap` binary)
 - Why endpoint overrides and `default_tags` exist on the AWS provider
+
+## Cleanup
+
+Destroy LocalStack resources with `terraform destroy` in `infra/terraform` when you are done. Leaving a Hobby LocalStack container running is fine for a day of practice, but tear down Terraform state so the next apply starts clean.
