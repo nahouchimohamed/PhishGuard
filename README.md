@@ -48,6 +48,8 @@ Read these in order under [`docs/learn/`](docs/learn/):
 5. Prometheus + Grafana
 6. GitHub Actions
 7. LocalStack + Terraform (optional, free Hobby plan)
+8. Safety rules
+9. Observability habits
 
 ## Free cloud alternatives (no paid EC2)
 
@@ -67,6 +69,7 @@ apps/web/         SvelteKit UI (BFF to the API)
 deploy/           Compose + Dockerfiles + ElasticMQ config
 infra/terraform/  LocalStack-oriented Lambda/SQS
 monitoring/       Prometheus + Grafana
+scripts/          Stdlib Python contract checks
 docs/learn/       Short lessons tied to real files
 ```
 
