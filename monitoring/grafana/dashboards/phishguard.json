@@ -536,6 +536,90 @@
       ],
       "title": "Logins",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "y": 27,
+        "w": 4,
+        "x": 8,
+        "h": 5
+      },
+      "id": 14,
+      "options": {
+        "textMode": "auto",
+        "graphMode": "area",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "legendFormat": "total",
+          "expr": "sum(phishguard_queue_poison_total)",
+          "refId": "A"
+        }
+      ],
+      "title": "Queue poison messages",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "y": 27,
+        "w": 4,
+        "x": 12,
+        "h": 5
+      },
+      "id": 15,
+      "options": {
+        "textMode": "auto",
+        "graphMode": "area",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "legendFormat": "total",
+          "expr": "sum(phishguard_queue_publish_errors_total)",
+          "refId": "A"
+        }
+      ],
+      "title": "Queue publish errors",
+      "type": "stat"
     }
   ],
   "refresh": "10s",
