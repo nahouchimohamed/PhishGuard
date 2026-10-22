@@ -72,7 +72,7 @@
 				</thead>
 				<tbody>
 					{#each data.campaigns as c}
-						<tr class="border-t border-slate-100 hover:bg-slate-50">
+						<tr class="border-t border-slate-100 transition hover:bg-teal-50/50">
 							<td class="px-4 py-3">
 								<a class="font-medium text-accent hover:underline" href={`/campaigns/${c.id}`}
 									>{c.name}</a
