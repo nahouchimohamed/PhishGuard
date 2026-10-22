@@ -38,15 +38,19 @@ rebuild-backend:
 	$(COMPOSE) up --build -d api worker
 
 api-test:
+	@echo "Running Go tests..."
 	cd backend && go test ./...
 
 api-check:
+	@echo "Running Go fmt/vet/test..."
 	cd backend && test -z "$$(gofmt -l .)" && go vet ./... && go test ./...
 
 web-test:
+	@echo "Running Vitest..."
 	cd apps/web && npm test
 
 web-check:
+	@echo "Running svelte-check and Vitest..."
 	cd apps/web && npm run check && npm test
 
 fmt:
