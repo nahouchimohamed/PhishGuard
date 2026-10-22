@@ -19,7 +19,12 @@
 		</div>
 		<div>
 			<div class="text-xs uppercase tracking-wide text-slate-500">Role</div>
-			<div class="mt-1 font-medium capitalize">{data.account.role}</div>
+			<div class="mt-1">
+				<span
+					class={`inline-flex rounded-md px-2 py-0.5 text-xs font-medium capitalize ${data.account.role === 'admin' ? 'bg-ink text-white' : 'bg-teal-50 text-teal-900'}`}
+					>{data.account.role}</span
+				>
+			</div>
 		</div>
 		<div>
 			<div class="text-xs uppercase tracking-wide text-slate-500">Organization</div>
