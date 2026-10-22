@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { Campaign } from '$lib/types';
 import { parseLaunchResponse } from './launch';
 
 const camp = {
