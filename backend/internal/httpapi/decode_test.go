@@ -51,3 +51,26 @@ func TestDecodeJSONCapsBody(t *testing.T) {
 		t.Fatal("expected error for oversized body")
 	}
 }
+
+func TestDecodeJSONRejectsTrailingJunk(t *testing.T) {
+	var got map[string]any
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"ok":true}{"extra":1}`))
+	req.Header.Set("Content-Type", "application/json")
+	if err := decodeJSON(req, &got); err == nil {
+		t.Fatal("expected error for trailing JSON")
+	}
+}
+
+func TestDecodeJSONAllowsCharset(t *testing.T) {
+	var got struct {
+		Email string `json:"email"`
+	}
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"email":"a@example.com"}`))
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	if err := decodeJSON(req, &got); err != nil {
+		t.Fatal(err)
+	}
+	if got.Email != "a@example.com" {
+		t.Fatalf("got=%q", got.Email)
+	}
+}
