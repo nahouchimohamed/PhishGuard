@@ -3,6 +3,7 @@
 	import CampaignStatusPill from '$lib/components/CampaignStatusPill.svelte';
 	import PageShell from '$lib/components/PageShell.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
+	import { truncate } from '$lib/text';
 	import { formatDateOnly } from '$lib/format';
 	import { clickTone, reportTone, toneClass } from '$lib/rateTone';
 	import { clickRate, openRate, reportRate } from '$lib/stats';
@@ -75,7 +76,7 @@
 						<tr class="border-t border-slate-100 transition hover:bg-teal-50/50">
 							<td class="px-4 py-3">
 								<a class="font-medium text-accent hover:underline" href={`/campaigns/${c.id}`}
-									>{c.name}</a
+									>{truncate(c.name, 48)}</a
 								>
 							</td>
 							<td class="px-4 py-3"><CampaignStatusPill status={c.status} /></td>
