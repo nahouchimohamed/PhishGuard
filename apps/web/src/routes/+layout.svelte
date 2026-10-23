@@ -7,4 +7,6 @@
 	<title>PhishGuard</title>
 </svelte:head>
 
-{@render children()}
+<div class="min-h-screen">
+	{@render children()}
+</div>
