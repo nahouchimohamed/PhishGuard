@@ -19,6 +19,7 @@ Please include:
 - Compose publishes services on `127.0.0.1` only.
 - Seed passwords and Grafana `admin/admin` are for **local learning**, not production.
 - Terraform defaults target **LocalStack**, not real AWS. Do not apply this configuration to a production account.
+- `apps/web/src/safety.test.ts` guards against password fields outside login and `{@html}` usage.
 
 ## Out of scope
 
