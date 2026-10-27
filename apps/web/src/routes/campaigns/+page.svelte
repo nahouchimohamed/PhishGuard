@@ -57,10 +57,11 @@
 			{/if}
 		</div>
 	{:else}
-		<div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+		<p class="mb-2 text-xs text-slate-500">{data.campaigns.length} shown</p>
+		<div class="max-h-[28rem] overflow-auto rounded-xl border border-slate-200 bg-white">
 			<table class="min-w-full text-left text-sm">
 				<caption class="sr-only">Campaign list</caption>
-				<thead class="bg-slate-50 text-slate-600">
+				<thead class="sticky top-0 bg-slate-50 text-slate-600">
 					<tr>
 						<th class="px-4 py-3 font-medium" scope="col">Name</th>
 						<th class="px-4 py-3 font-medium" scope="col">Status</th>
