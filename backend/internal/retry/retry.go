@@ -7,6 +7,8 @@ import (
 
 // Do runs fn up to attempts times. Between failures it waits base * 2^i,
 // honouring ctx cancellation instead of an unconditional Sleep.
+// attempts values below 1 are clamped to 1 so callers can pass a zero config
+// without skipping the function entirely.
 func Do(ctx context.Context, attempts int, base time.Duration, fn func(context.Context) error) error {
 	if attempts < 1 {
 		attempts = 1
