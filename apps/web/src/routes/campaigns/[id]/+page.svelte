@@ -40,6 +40,8 @@
 		<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
 			<div>
 				<nav class="text-sm text-slate-500" aria-label="Breadcrumb">
+					<a class="hover:underline" href="/overview">Overview</a>
+					<span aria-hidden="true"> / </span>
 					<a class="hover:underline" href="/campaigns">Campaigns</a>
 					<span aria-hidden="true"> / </span>
 					<span class="text-slate-700">{d.campaign.name}</span>
