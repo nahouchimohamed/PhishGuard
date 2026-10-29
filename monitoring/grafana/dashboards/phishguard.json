@@ -494,6 +494,48 @@
       ],
       "title": "Delivery failures",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "y": 27,
+        "w": 4,
+        "x": 4,
+        "h": 5
+      },
+      "id": 13,
+      "options": {
+        "textMode": "auto",
+        "graphMode": "area",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "legendFormat": "total",
+          "expr": "sum(phishguard_logins_total)",
+          "refId": "A"
+        }
+      ],
+      "title": "Logins",
+      "type": "stat"
     }
   ],
   "refresh": "10s",
