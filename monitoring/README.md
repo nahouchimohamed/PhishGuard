@@ -21,3 +21,7 @@ Grafana allows anonymous viewer access for local review; `admin`/`admin` is also
 ## Habit
 
 When you add a counter in Go, update the dashboard (or at least the metrics contract script) in the same change so dashboards stay consistent.
+
+## Contract
+
+`python scripts/check_metrics_contract.py` (via `make check-static`) requires every `phishguard_*` Name in `metrics.go` to appear in a dashboard PromQL `expr`.
