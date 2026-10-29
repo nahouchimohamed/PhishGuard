@@ -23,7 +23,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          # `defaults.run.working-directory` only applies to `run:` steps, so
+          # paths given to `uses:` steps are relative to the repo root.
+          go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - name: Format
         run: test -z "$(gofmt -l .)"
