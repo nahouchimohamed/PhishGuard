@@ -60,7 +60,12 @@
 				</p>
 			</div>
 			<div class="flex flex-wrap gap-2">
-				<a class="btn-secondary" href={`/campaigns/${d.campaign.id}/export`}>Download CSV</a>
+				<a
+					class="btn-secondary"
+					class:pointer-events-none={d.recipients.length === 0}
+					class:opacity-50={d.recipients.length === 0}
+					href={`/campaigns/${d.campaign.id}/export`}>Download CSV</a
+				>
 				{#if isCloseable(d.campaign.status)}
 					<form
 						method="POST"
