@@ -15,7 +15,7 @@
 
 Prometheus scrapes `api:8080` and `worker:8081` every **10s**, evaluates alert rules from `rules/phishguard.rules.yml`, and Grafana refreshes on the same interval.
 
-Dashboard panels include totals, report/click rates, HTTP request rate, 5xx ratio, p95 latency, scrape `up`, and `go_goroutines`.
+Dashboard panels include totals, report/click rates, delivery failures, logins, queue poison/publish errors, stats cache events, HTTP request rate, 5xx ratio, p95 latency, scrape `up`, and `go_goroutines`.
 
 Open http://localhost:3002 → folder **PhishGuard** → dashboard **PhishGuard**.
 
