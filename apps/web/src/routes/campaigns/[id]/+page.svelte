@@ -50,7 +50,12 @@
 					<h1 class="page-title">{d.campaign.name}</h1>
 					<CampaignStatusPill status={d.campaign.status} />
 				</div>
-				<p class="page-subtitle mt-1">Template {d.template.name}</p>
+				<p class="page-subtitle mt-1">
+					Template {d.template.name}
+					{#if d.campaign.status === 'launching'}
+						· Queue publish in progress
+					{/if}
+				</p>
 				<p class="mt-1 text-xs text-slate-500">
 					Created <time datetime={d.campaign.created_at}>{formatDateTime(d.campaign.created_at)}</time>
 					{#if d.campaign.launched_at}
