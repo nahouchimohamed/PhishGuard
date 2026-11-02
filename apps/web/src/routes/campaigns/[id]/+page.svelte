@@ -188,7 +188,7 @@
 			{#if !d.events || d.events.length === 0}
 				<p class="text-sm text-slate-600">No events recorded yet.</p>
 			{:else}
-				<ol class="space-y-2">
+				<ol class="max-h-80 space-y-2 overflow-y-auto pr-1">
 					{#each d.events as ev}
 						<li class={`rounded-lg border px-3 py-2 text-sm ${eventToneClass(ev.kind)}`}>
 							<div class="flex flex-wrap gap-2">
