@@ -21,3 +21,7 @@ Grafana allows anonymous viewer access for classroom demos; `admin`/`admin` is a
 ## Habit
 
 When you add a counter in Go, update the dashboard (or at least the metrics contract script) in the same change so the lesson stays consistent.
+
+## Contract
+
+`python scripts/check_metrics_contract.py` (via `make check-static`) requires every `phishguard_*` Name in `metrics.go` to appear in a dashboard PromQL `expr`.
