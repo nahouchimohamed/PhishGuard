@@ -8,7 +8,8 @@
 		@apply bg-gradient-to-b from-slate-50 to-panel text-ink antialiased;
 	}
 
-	a:focus-visible {
+	a:focus-visible,
+	button:focus-visible {
 		@apply outline-none ring-2 ring-accent ring-offset-2;
 	}
 }
