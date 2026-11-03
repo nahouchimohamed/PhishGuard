@@ -12,6 +12,11 @@ describe('percent', () => {
 		expect(percent(1, 3)).toBe(33.3);
 		expect(percent(2, 3)).toBe(66.7);
 	});
+
+	it('returns 0 for non-finite numerators', () => {
+		expect(percent(Number.POSITIVE_INFINITY, 10)).toBe(0);
+		expect(percent(Number.NEGATIVE_INFINITY, 10)).toBe(0);
+	});
 });
 
 describe('rates', () => {
