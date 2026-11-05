@@ -19,7 +19,7 @@
 
 <PageShell title={data.item?.subject ?? 'Message'} user={data.user} width="max-w-3xl">
 	{#snippet banner()}
-		SIMULATION — reporting is the goal. The link opens a lesson page, never a password form.
+		SIMULATION — reporting is the goal. The training link opens a lesson page, never a password form.
 	{/snippet}
 
 	{#if !data.item}
