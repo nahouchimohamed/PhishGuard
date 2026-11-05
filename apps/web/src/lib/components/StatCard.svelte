@@ -19,7 +19,7 @@
 	);
 </script>
 
-<div class="card text-center">
-	<div class={`text-2xl font-semibold ${valueClass}`}>{value}</div>
-	<div class="text-xs uppercase tracking-wide text-slate-500">{label}</div>
+<div class="card px-3 py-4 text-center">
+	<div class={`text-2xl font-semibold tabular-nums ${valueClass}`}>{value}</div>
+	<div class="mt-1 text-[11px] uppercase tracking-wide text-slate-500">{label}</div>
 </div>
