@@ -41,7 +41,7 @@
 					{#each filtered as e}
 						<tr class="border-t border-slate-100 odd:bg-white even:bg-slate-50/70 hover:bg-teal-50/40">
 							<td class="px-4 py-3 font-medium">{e.display_name}</td>
-							<td class="px-4 py-3 text-slate-600">{e.email}</td>
+							<td class="max-w-xs break-all px-4 py-3 text-slate-600">{e.email}</td>
 						</tr>
 					{:else}
 						<tr><td class="px-4 py-6 text-slate-500" colspan="2">No matches.</td></tr>

@@ -173,7 +173,7 @@
 						{#each visibleRecipients as r}
 							<tr class="border-t border-slate-100">
 								<td class="py-2 pr-4">{r.display_name}</td>
-								<td class="py-2 pr-4">{r.email}</td>
+								<td class="max-w-[14rem] break-all py-2 pr-4">{r.email}</td>
 								<td class="py-2 pr-4"><StatusBadge label={recipientLabel(r)} /></td>
 								<td class="py-2">{formatDateTime(r.delivered_at)}</td>
 							</tr>
