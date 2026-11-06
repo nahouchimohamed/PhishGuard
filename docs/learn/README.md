@@ -40,3 +40,5 @@ flowchart LR
 ```
 
 All published ports bind to `127.0.0.1`. Training only — no real phishing.
+
+Folder READMEs under `deploy/`, `monitoring/`, `infra/terraform/`, and `scripts/` summarize each area when you need a quick map without opening Compose YAML.
