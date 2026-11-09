@@ -18,7 +18,7 @@ Open:
 | URL | What |
 |-----|------|
 | http://localhost:5173 | Web UI |
-| http://localhost:8080/healthz | API health |
+| http://localhost:8080/healthz | API health (Postgres and Redis) |
 | http://localhost:9090 | Prometheus |
 | http://localhost:3002 | Grafana (anonymous viewer, or admin/admin) |
 

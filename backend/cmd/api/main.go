@@ -58,7 +58,7 @@ func main() {
 
 	authSvc := auth.New(st, cfg.SessionCookie, cfg.SessionTTL)
 	campSvc := campaign.New(st, q, dash, cfg.PublicAppURL)
-	srv := httpapi.New(authSvc, st, campSvc)
+	srv := httpapi.New(authSvc, st, campSvc, dash)
 
 	httpServer := &http.Server{
 		Addr:              cfg.HTTPAddr,
