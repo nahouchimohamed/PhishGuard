@@ -37,7 +37,10 @@
 		<div class="grid gap-3 sm:grid-cols-2">
 			{#each filtered as t}
 				<a class="card block transition hover:-translate-y-0.5 hover:border-accent/40" href={`/templates/${t.id}`}>
-					<div class="font-medium text-ink">{t.name}</div>
+					<div class="flex items-start justify-between gap-2">
+						<div class="font-medium text-ink">{t.name}</div>
+						<span class="text-xs text-accent">View</span>
+					</div>
 					<p class="mt-1 line-clamp-2 text-sm text-slate-600">{t.subject}</p>
 				</a>
 			{/each}
