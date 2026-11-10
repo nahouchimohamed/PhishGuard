@@ -1,5 +1,5 @@
 # API image — serves /healthz, /metrics, and the JSON campaign API.
-FROM golang:1.22-bookworm AS build
+FROM golang:1.27-bookworm AS build
 WORKDIR /src
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
