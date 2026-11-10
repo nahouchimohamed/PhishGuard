@@ -1,5 +1,5 @@
 # Web image — SvelteKit BFF that talks to the Go API inside Compose.
-FROM node:20-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY apps/web/package.json apps/web/package-lock.json ./
 RUN npm ci
@@ -7,7 +7,7 @@ COPY apps/web/ ./
 RUN npm run build
 RUN npm prune --omit=dev
 
-FROM node:20-alpine
+FROM node:26-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
