@@ -21,7 +21,7 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           # `defaults.run.working-directory` only applies to `run:` steps, so
           # paths given to `uses:` steps are relative to the repo root.
