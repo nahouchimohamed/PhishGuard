@@ -16,8 +16,8 @@
 		· <a class="text-accent hover:underline" href="/employees">Browse employees</a>
 	</p>
 	<h1 class="page-title">New campaign</h1>
-	<p class="mt-1 text-sm text-slate-600">
-		Commit-then-publish: the API saves recipients, then enqueues one SQS message each.
+	<p class="page-subtitle mt-1">
+		Saves recipients, then enqueues one inbox delivery per person.
 	</p>
 
 	{#if form?.error || data.error}
