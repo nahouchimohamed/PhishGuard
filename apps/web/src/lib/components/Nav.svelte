@@ -39,7 +39,7 @@
 			{/if}
 			<a class="hover:text-accent" href="/account" aria-current={current('/account')}>Account</a>
 			<form method="POST" action="/logout">
-				<button class="btn-secondary" type="submit">Log out</button>
+				<button class="btn-secondary px-3 py-1.5 text-xs" type="submit">Log out</button>
 			</form>
 		</nav>
 	</div>
