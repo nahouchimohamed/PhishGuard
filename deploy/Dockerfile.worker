@@ -1,5 +1,5 @@
 # Worker image — same Deliver path as Lambda, long-polls ElasticMQ in Compose.
-FROM golang:1.22-bookworm AS build
+FROM golang:1.27-bookworm AS build
 WORKDIR /src
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
