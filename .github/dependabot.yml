@@ -1,22 +1,63 @@
 version: 2
 updates:
+  # One PR per week for all GitHub Actions bumps.
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
+  # Minor and patch updates share one PR. Major versions stay separate so a
+  # breaking one cannot block the safe ones.
+  # Note: a module can raise the `go` directive in go.mod, and deploy/Dockerfile.*
+  # must then build with at least that Go version.
   - package-ecosystem: gomod
     directory: /backend
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    groups:
+      go-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: npm
     directory: /apps/web
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # SvelteKit 3 is a migration, not a bump: Node 22.17+, TypeScript 6, config
+      # moved out of svelte.config.js, `$lib` renamed to `#lib`. adapter-node 6
+      # only works with Kit 3. Remove these two rules when you decide to migrate.
+      - dependency-name: "@sveltejs/kit"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@sveltejs/adapter-node"
+        update-types: ["version-update:semver-major"]
+    groups:
+      # These must move together or npm cannot resolve them. That is what broke
+      # the separate vite and vitest PRs. The first matching group wins, so this
+      # one has to stay above the catch-all below.
+      svelte-toolchain:
+        patterns:
+          - "vite"
+          - "vitest"
+          - "svelte"
+          - "svelte-check"
+          - "@sveltejs/*"
+      web-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: docker
     directory: /deploy
