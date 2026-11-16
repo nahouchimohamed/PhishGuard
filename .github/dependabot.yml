@@ -34,13 +34,26 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     ignore:
-      # SvelteKit 3 is a migration, not a bump: Node 22.17+, TypeScript 6, config
-      # moved out of svelte.config.js, `$lib` renamed to `#lib`. adapter-node 6
-      # only works with Kit 3. Remove these two rules when you decide to migrate.
+      # These majors need a migration, not just a version bump, and Dependabot's
+      # own PRs for them failed CI. They are skipped until you decide to migrate.
+      # Delete a rule to start receiving PRs for that package again.
+      #
+      # SvelteKit 3: Node 22.17+, TypeScript 6, config moved out of
+      # svelte.config.js, `$lib` renamed to `#lib`. adapter-node 6 only works
+      # with Kit 3.
       - dependency-name: "@sveltejs/kit"
         update-types: ["version-update:semver-major"]
       - dependency-name: "@sveltejs/adapter-node"
         update-types: ["version-update:semver-major"]
+      # Tailwind 4: the PostCSS plugin moved to `@tailwindcss/postcss` and the
+      # config moves into CSS (`npx @tailwindcss/upgrade` does most of it).
+      # Needs a visual review of the UI afterwards.
+      - dependency-name: "tailwindcss"
+        update-types: ["version-update:semver-major"]
+      # TypeScript 7: svelte-check only supports `^5 || ^6`, so npm cannot
+      # resolve it. TypeScript 6 works here and is still allowed.
+      - dependency-name: "typescript"
+        versions: ["7.x"]
     groups:
       # These must move together or npm cannot resolve them. That is what broke
       # the separate vite and vitest PRs. The first matching group wins, so this
