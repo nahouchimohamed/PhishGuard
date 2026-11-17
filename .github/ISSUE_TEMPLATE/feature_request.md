@@ -18,7 +18,8 @@ Describe the change in one or two short paragraphs.
 
 - [ ] Does not send real email
 - [ ] Does not add credential-collection UI on simulation pages
-- [ ] Stays runnable on a laptop with Docker Compose
+- [ ] Stays runnable on a workstation with Docker Compose
 
 ## Extra context
 
+Links to related docs or prior PRs, if any.

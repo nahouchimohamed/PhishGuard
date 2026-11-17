@@ -1,6 +1,6 @@
 # Terraform (LocalStack only)
 
-These modules provision Lambda and SQS against [LocalStack](https://localstack.cloud/), not real AWS.
+These modules provision Lambda and SQS on [LocalStack](https://localstack.cloud/), not real AWS.
 
 ## Files
 
@@ -18,4 +18,4 @@ Do **not** `terraform apply` this configuration to a production AWS account. Pro
 1. Export `LOCALSTACK_AUTH_TOKEN` and start LocalStack.
 2. `make lambda-zip` to build `backend/bin/bootstrap`.
 3. `terraform init` then `terraform apply` in this directory.
-
+4. Run `terraform destroy` in this directory when the stack is no longer needed.
