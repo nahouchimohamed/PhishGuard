@@ -2,7 +2,7 @@
 
 ## What this project is
 
-PhishGuard is a **simulation platform** for phishing awareness. It must not be used to phish real people, collect credentials, or send unsolicited email.
+PhishGuard is a phishing simulation platform. It must not be used to phish real people, collect credentials, or send unsolicited email.
 
 ## Reporting a vulnerability
 
@@ -12,7 +12,7 @@ Please include:
 
 - Affected component (API, web, worker, compose, CI)
 - Steps to reproduce on a local Compose stack
-- Impact assessment (local-only vs anything that could escape the laptop)
+- Impact assessment (local-only vs anything that could escape the workstation)
 
 ## Safe local defaults
 
@@ -23,5 +23,5 @@ Please include:
 
 ## Out of scope
 
-- Using the simulator against people who did not consent to a training exercise
+- Using the simulator against people who did not consent
 - Turning templates into real credential-harvesting pages

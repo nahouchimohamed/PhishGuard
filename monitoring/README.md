@@ -16,7 +16,7 @@ Local Prometheus + Grafana for the PhishGuard stack.
 | Prometheus | http://localhost:9090 |
 | Grafana | http://localhost:3002 |
 
-Grafana allows anonymous viewer access for local review; `admin`/`admin` is also seeded for local development only.
+Grafana allows anonymous viewer access on the local stack; `admin`/`admin` is seeded for local development only.
 
 ## Habit
 
