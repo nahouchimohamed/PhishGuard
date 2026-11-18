@@ -7,7 +7,7 @@
 				draft: 'bg-slate-100 text-slate-700',
 				launching: 'bg-amber-50 text-amber-900 ring-1 ring-amber-200',
 				active: 'bg-sky-50 text-sky-900',
-				closed: 'bg-slate-800 text-white'
+				closed: 'bg-slate-700 text-slate-100'
 			} as Record<string, string>
 		)[status] ?? 'bg-slate-100 text-slate-700'
 	);
