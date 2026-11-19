@@ -25,7 +25,7 @@
 		</div>
 		<label class="block text-sm">
 			<span class="mb-1 block font-medium text-slate-600">Search</span>
-			<input class="input w-64" bind:value={q} placeholder="Name or subject" />
+			<input class="input w-64" bind:value={q} placeholder="Name or subject" autofocus />
 		</label>
 	</div>
 

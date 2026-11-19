@@ -23,7 +23,7 @@
 			<h1 class="page-title">Employees</h1>
 			<p class="page-subtitle">{data.employees.length} people in this org</p>
 		</div>
-		<input class="input w-64" bind:value={q} placeholder="Filter by name or email" />
+		<input class="input w-64" bind:value={q} placeholder="Filter by name or email" autofocus />
 	</div>
 
 	{#if data.error}
