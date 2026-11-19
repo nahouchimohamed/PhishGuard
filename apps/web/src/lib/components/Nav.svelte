@@ -19,7 +19,7 @@
 				>Training</span
 			>
 		</div>
-		<nav class="flex flex-wrap items-center gap-4 text-sm" aria-label="Primary">
+		<nav class="flex max-w-full flex-wrap items-center gap-3 text-sm sm:gap-4" aria-label="Primary">
 			<span class="text-slate-600">{user.display_name} · {user.role}</span>
 			{#if user.role === 'admin'}
 				<a class="hover:text-accent" href="/overview" aria-current={current('/overview')}
