@@ -44,7 +44,7 @@
 						<div class="font-medium text-ink">{t.name}</div>
 						<span class="text-xs text-accent">View</span>
 					</div>
-					<p class="mt-1 line-clamp-2 text-sm text-slate-600">{t.subject}</p>
+					<p class="mt-2 line-clamp-2 text-sm leading-5 text-slate-600">{t.subject}</p>
 				</a>
 			{/each}
 		</div>
