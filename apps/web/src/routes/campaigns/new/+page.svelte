@@ -37,7 +37,7 @@
 	{:else}
 		<form
 			method="POST"
-			class="card mt-6 space-y-5"
+			class="card mt-6 space-y-5 shadow-panel"
 			use:enhance={() => {
 				pending = true;
 				return async ({ update }) => {
