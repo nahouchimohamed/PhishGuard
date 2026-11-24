@@ -31,7 +31,7 @@
 			{#if data.templates.length === 0}
 				No templates are available yet.
 			{:else}
-				No employees are available to target.
+				No employees are available to target. Seed the org first.
 			{/if}
 		</div>
 	{:else}
