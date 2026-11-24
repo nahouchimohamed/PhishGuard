@@ -37,7 +37,7 @@ describe('requireRole', () => {
 			throw new Error('expected redirect');
 		} catch (e) {
 			expect(isRedirect(e)).toBe(true);
-			if (isRedirect(e)) expect(e.location).toBe('/campaigns');
+			if (isRedirect(e)) expect(e.location).toBe('/overview');
 		}
 	});
 
