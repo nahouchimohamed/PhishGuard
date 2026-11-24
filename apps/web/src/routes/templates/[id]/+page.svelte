@@ -38,7 +38,9 @@
 		{/if}
 
 		<div class="mt-6">
-			<a class="btn" href={`/campaigns/new?template=${data.template.id}`}>Use in new campaign</a>
+			<a class="btn" href={`/campaigns/new?template=${encodeURIComponent(data.template.id)}`}
+				>Use in new campaign</a
+			>
 		</div>
 	{/if}
 </PageShell>
